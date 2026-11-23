@@ -360,8 +360,19 @@ const EXCLUDE_CHAINS = new Set([
   "Zaxby's","Culver's","In-N-Out Burger","In-N-Out","Whataburger","Jersey Mike's","Jersey Mike's Subs","Jimmy John's","Quiznos","Sbarro","Pollo Tropical",
   "Firehouse Subs","Greggs","Pret A Manger","Pret","Costa","Costa Coffee","Caffe Nero","Nero","Starbucks","Krispy Kreme","Nando's","Nandos",
   "Pizza Express","Wagamama","Yo! Sushi","Yo Sushi","Leon","Itsu","Wasabi","Tortilla","Gourmet Burger Kitchen","GBK","Byron","Honest Burgers","Wimpy",
-  "Harry Ramsden's","Harry Ramsdens","Fisherman's","The Codfather","Apache Pizza","Supermac's","Insomnia","Insomnia Coffee Company","Abrakebabra"
-]);
+  "Harry Ramsden's","Harry Ramsdens","Fisherman's","The Codfather","Apache Pizza","Supermac's","Insomnia","Insomnia Coffee Company","Abrakebabra",
+  "Applebee's","Chili's","TGI Fridays","TGI Friday's","Olive Garden","Red Lobster","Outback Steakhouse","Uno Pizzeria","IHOP","Denny's",
+  "Hooters","Ruby Tuesday","Red Robin","The Cheesecake Factory","P.F. Chang's","Texas Roadhouse","LongHorn Steakhouse","Golden Corral",
+  "Cracker Barrel","Bob Evans","Waffle House","Friendly's","Panera Bread","Boston Market","Qdoba","Moe's Southwest Grill","Jollibee",
+  "Wetherspoon","JD Wetherspoon","Harvester","Toby Carvery","Frankie & Benny's","Bella Italia","Zizzi","ASK Italian","Prezzo","Hard Rock Cafe"
+].map(n => n.toLowerCase().replace(/[^a-z0-9]/g, '')));
+// short names must match exactly; longer ones also match as a prefix ("Applebee's Grill + Bar")
+function isChain(name) {
+  const n = String(name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  if (EXCLUDE_CHAINS.has(n)) return true;
+  for (const c of EXCLUDE_CHAINS) if (c.length >= 6 && n.startsWith(c)) return true;
+  return false;
+}
 const ICON = {
   gps: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>',
   x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
@@ -710,10 +721,10 @@ async function computeSpots(locs, mode, types) {
     if (!p.geometry || seen.has(p.place_id)) continue;
     seen.add(p.place_id);
     if (p.business_status && p.business_status !== 'OPERATIONAL') continue;
+    if (isChain(p.name)) continue;
     if (filterFood) {
       const t = p.types || [];
       if (t.includes('meal_takeaway') || t.includes('meal_delivery')) continue;
-      if (EXCLUDE_CHAINS.has(p.name)) continue;
     }
     const loc = { lat: p.geometry.location.lat(), lng: p.geometry.location.lng() };
     const d = locs.map(l => haversine(l, loc));
