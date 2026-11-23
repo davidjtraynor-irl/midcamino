@@ -124,7 +124,7 @@ button { cursor: pointer; background: none; border: 0; }
 .results { position: relative; }
 .map-wrap { position: fixed; top: 0; left: 0; right: 0; height: 42vh; background: var(--mist); }
 #map { width: 100%; height: 100%; }
-.back { position: absolute; top: max(12px, env(safe-area-inset-top)); left: 12px; z-index: 2; display: flex; align-items: center; gap: 4px; height: 40px; padding: 0 14px 0 10px; border-radius: 999px; background: var(--paper); font-weight: 650; font-size: 15px; box-shadow: 0 2px 10px rgba(38,22,15,.16); }
+.back { position: fixed; top: max(12px, env(safe-area-inset-top)); left: 12px; z-index: 10; display: flex; align-items: center; gap: 4px; height: 40px; padding: 0 14px 0 10px; border-radius: 999px; background: var(--paper); font-weight: 650; font-size: 15px; box-shadow: 0 2px 10px rgba(38,22,15,.16); }
 .back svg { width: 18px; height: 18px; }
 .sheet { position: relative; z-index: 3; margin-top: calc(42vh - 22px); min-height: calc(58vh + 22px); background: var(--paper); border-radius: 22px 22px 0 0; padding: 10px 16px calc(32px + var(--safe-b)); box-shadow: 0 -6px 24px rgba(38,22,15,.10); }
 .grab { width: 40px; height: 4px; border-radius: 4px; background: var(--line); margin: 0 auto 14px; }
@@ -206,7 +206,7 @@ button { cursor: pointer; background: none; border: 0; }
   .map-wrap { left: 440px; height: 100vh; }
   .sheet { margin-top: 0; width: 440px; min-height: 100vh; border-radius: 0; box-shadow: 6px 0 24px rgba(38,22,15,.08); padding-top: 72px; }
   .grab { display: none; }
-  .back { position: fixed; left: 16px; top: 16px; }
+  .back { left: 16px; top: 16px; box-shadow: 0 0 0 1px var(--line); }
   .toast { bottom: 32px; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -268,8 +268,8 @@ button { cursor: pointer; background: none; border: 0; }
 <section id="results" class="screen results" aria-label="Meetup spots">
   <div class="map-wrap">
     <div id="map" role="region" aria-label="Map of spots"></div>
-    <button class="back" id="back-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Edit</button>
   </div>
+  <button class="back" id="back-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Edit</button>
   <div class="sheet">
     <div class="grab" aria-hidden="true"></div>
     <div class="sheet-inner">
