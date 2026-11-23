@@ -2,16 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>Midcamino: find a spot that's fair for everyone</title>
-<meta name="description" content="Midcamino finds places to meet where nobody travels much further than anyone else." />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
+<title>Midcamino: meet halfway, fairly</title>
+<meta name="description" content="Share where you're coming from, send one link, and Midcamino finds places to meet that are fair for everyone." />
 <meta name="theme-color" content="#ffffff" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <meta name="apple-mobile-web-app-title" content="Midcamino" />
 <meta property="og:title" content="Midcamino" />
-<meta property="og:description" content="Find somewhere to meet that's fair for everyone." />
+<meta property="og:description" content="Meet halfway, fairly. Add where you're coming from." />
 <link rel="manifest" href="manifest.json" />
 <link rel="icon" href="icons/icon-192.png" />
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
@@ -23,9 +23,9 @@
   --ink: #26160f;
   --muted: #74665d;
   --faint: #a2968d;
-  --line: #e8e2db;
+  --line: #ebe6e0;
   --paper: #ffffff;
-  --mist: #f3f4f1;
+  --mist: #f4f4f1;
   --terra: #b5451b;
   --terra-deep: #8f3412;
   --terra-soft: #fbece5;
@@ -35,306 +35,310 @@
   --bad: #b3261e;
   --display: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
   --body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  --safe-t: env(safe-area-inset-top, 0px);
   --safe-b: env(safe-area-inset-bottom, 0px);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { height: 100%; }
-body { font-family: var(--body); color: var(--ink); background: var(--paper); font-size: 16px; line-height: 1.45; -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; }
+body { font-family: var(--body); color: var(--ink); background: var(--paper); font-size: 16px; line-height: 1.45; -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
 button, input { font: inherit; color: inherit; }
 button { cursor: pointer; background: none; border: 0; }
 [hidden] { display: none !important; }
-:focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; border-radius: 10px; }
-.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+:focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; }
+.view { position: fixed; inset: 0; display: none; }
+.view.on { display: block; }
 
-.screen { display: none; min-height: 100%; }
-.screen.is-active { display: block; }
+/* ---------- shared bits ---------- */
+.pill { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; height: 58px; border-radius: 999px; font-family: var(--display); font-weight: 650; font-size: 18px; letter-spacing: -0.01em; transition: transform .12s, background .15s; }
+.pill:active { transform: scale(.98); }
+.pill svg { width: 22px; height: 22px; flex-shrink: 0; }
+.pill.primary { background: var(--ink); color: #fff; }
+.pill.terra { background: var(--terra); color: #fff; }
+.pill.sun { background: var(--sun); color: var(--ink); }
+.pill.ghost { background: var(--mist); color: var(--ink); }
+.pill:disabled { opacity: .5; transform: none; }
+.textlink { font-size: 15px; font-weight: 600; color: var(--muted); padding: 10px 4px; }
+.textlink:hover { color: var(--terra); }
+.avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--c, var(--terra)); color: #fff; display: grid; place-items: center; font-family: var(--display); font-weight: 800; font-size: 16px; flex-shrink: 0; box-shadow: 0 0 0 3px var(--paper); }
+.avatar.wait { background: var(--paper); color: var(--faint); box-shadow: 0 0 0 3px var(--paper), inset 0 0 0 2px var(--line); animation: breathe 1.6s ease-in-out infinite; }
+.avatar.add { background: var(--paper); color: var(--ink); box-shadow: 0 0 0 3px var(--paper), inset 0 0 0 2px var(--line); font-size: 22px; font-weight: 500; }
+@keyframes breathe { 50% { box-shadow: 0 0 0 3px var(--paper), inset 0 0 0 2px var(--terra); color: var(--terra); } }
 
-/* ---------- plan screen ---------- */
-.plan { max-width: 520px; margin: 0 auto; padding: max(14px, env(safe-area-inset-top)) 20px calc(110px + var(--safe-b)); }
-.topbar { display: flex; align-items: center; justify-content: space-between; height: 48px; }
-.brand { display: flex; align-items: center; gap: 8px; font-family: var(--display); font-weight: 800; font-size: 21px; letter-spacing: -0.02em; color: var(--terra); }
-.link-btn { font-size: 14px; font-weight: 600; color: var(--muted); padding: 8px 4px; }
-.link-btn:hover { color: var(--terra); }
+/* ---------- start ---------- */
+#start { background: var(--paper); overflow-y: auto; }
+.start { min-height: 100%; max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; padding: calc(18px + var(--safe-t)) 24px calc(24px + var(--safe-b)); }
+.start-top { display: flex; justify-content: space-between; align-items: center; height: 40px; }
+.wordmark { display: flex; align-items: center; gap: 8px; font-family: var(--display); font-weight: 800; font-size: 20px; letter-spacing: -0.02em; color: var(--terra); }
+.hero { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 24px 0; }
+.hero-art { width: 100%; max-width: 300px; height: auto; margin: 0 0 28px -6px; }
+.hero-art .a { animation: drift-a 3.2s ease-in-out infinite; }
+.hero-art .b { animation: drift-b 3.2s ease-in-out infinite; }
+@keyframes drift-a { 50% { transform: translate(6px, 3px); } }
+@keyframes drift-b { 50% { transform: translate(-6px, 3px); } }
+.hero h1 { font-family: var(--display); font-weight: 800; font-size: clamp(44px, 13vw, 64px); line-height: .95; letter-spacing: -0.04em; }
+.hero p { font-size: 17px; color: var(--muted); margin-top: 14px; max-width: 34ch; }
+.start-actions { display: grid; gap: 12px; }
+.namebox { display: block; width: 100%; height: 58px; border-radius: 999px; border: 0; background: var(--mist); padding: 0 24px; font-size: 17px; outline: none; margin-bottom: 4px; }
+.namebox:focus { box-shadow: inset 0 0 0 2px var(--ink); background: var(--paper); }
+.again { display: flex; align-items: center; gap: 10px; width: 100%; padding: 6px 4px; font-size: 15px; color: var(--muted); text-align: left; }
+.again b { color: var(--ink); font-weight: 600; }
 
-.title { font-family: var(--display); font-weight: 800; font-size: clamp(32px, 9vw, 44px); line-height: 1.02; letter-spacing: -0.03em; margin: 22px 0 14px; text-wrap: balance; }
-.h2 { font-family: var(--display); font-weight: 650; font-size: 17px; letter-spacing: -0.01em; margin: 30px 0 10px; }
-.lede { color: var(--muted); font-size: 16px; margin: -6px 0 0; max-width: 40ch; }
-.invite { margin-top: 18px; }
-.live .h2 { margin-bottom: 4px; }
-.live-status { font-size: 14px; color: var(--muted); }
-.live-status.busy::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--sun); margin-right: 8px; vertical-align: 1px; animation: blink 1s infinite; }
-.live-status.err { color: var(--bad); }
-.mini { list-style: none; margin-top: 8px; transition: opacity .2s; }
-.mini.dim { opacity: .45; }
-.mini li button { display: flex; gap: 12px; width: 100%; text-align: left; padding: 10px 0; border-bottom: 1px solid var(--line); align-items: flex-start; }
-.mini li:last-child button { border-bottom: 0; }
-.mini .rank { width: 24px; height: 24px; font-size: 13px; border-radius: 8px; }
-.mini li:first-child .rank { background: var(--sun); color: var(--ink); }
-.mini-name { display: block; font-family: var(--display); font-weight: 650; font-size: 16px; line-height: 1.25; }
-.mini-sub { display: block; font-size: 13px; color: var(--muted); margin-top: 1px; }
+/* ---------- search ---------- */
+#search { background: var(--paper); z-index: 40; display: none; flex-direction: column; }
+#search.on { display: flex; }
+.search-bar { display: flex; align-items: center; gap: 6px; padding: calc(10px + var(--safe-t)) 12px 10px; border-bottom: 1px solid var(--line); }
+.icon-btn { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; }
+.icon-btn:hover { background: var(--mist); }
+.icon-btn svg { width: 22px; height: 22px; }
+.search-fields { flex: 1; min-width: 0; }
+.search-input { width: 100%; height: 48px; border: 0; border-radius: 14px; background: var(--mist); padding: 0 16px; font-size: 17px; outline: none; }
+.search-name { width: 100%; height: 40px; border: 0; background: none; padding: 0 16px; font-size: 15px; font-weight: 600; outline: none; margin-bottom: 4px; }
+.search-name::placeholder { color: var(--faint); }
+.suggestions { list-style: none; overflow-y: auto; flex: 1; padding: 6px 0 calc(12px + var(--safe-b)); }
+.sugg { display: flex; gap: 14px; align-items: center; width: 100%; text-align: left; padding: 14px 20px; }
+.sugg:hover, .sugg:focus-visible { background: var(--mist); outline: none; }
+.sugg-ic { width: 36px; height: 36px; border-radius: 50%; background: var(--mist); display: grid; place-items: center; flex-shrink: 0; color: var(--muted); }
+.sugg-ic svg { width: 18px; height: 18px; }
+.sugg.gps .sugg-ic { background: var(--terra-soft); color: var(--terra); }
+.sugg-main { display: block; font-size: 16px; font-weight: 600; line-height: 1.3; }
+.sugg-sub { display: block; font-size: 14px; color: var(--muted); line-height: 1.3; }
+.search-note { padding: 16px 20px; font-size: 14px; color: var(--muted); }
+.powered { padding: 8px 20px; font-size: 11px; color: var(--faint); text-align: right; }
 
-.banner { display: flex; gap: 12px; align-items: center; border-radius: 16px; padding: 12px 14px; margin-top: 12px; font-size: 14px; }
-.banner p { color: var(--muted); font-size: 13px; }
-.banner strong { font-weight: 650; }
-.banner .grow { flex: 1; min-width: 0; }
-.banner-group { background: var(--terra-soft); }
-.banner-results { background: var(--mist); }
-.banner-chosen { background: var(--sun-soft); }
-.code-pill { font-family: var(--display); font-weight: 800; letter-spacing: 0.12em; font-size: 13px; color: var(--terra-deep); background: #fff; border-radius: 6px; padding: 1px 6px; margin-left: 4px; }
-.small-btn { flex-shrink: 0; font-size: 14px; font-weight: 650; border-radius: 999px; padding: 8px 14px; background: var(--terra); color: #fff; }
-.small-btn.alt { background: #fff; color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); }
-.text-btn { font-size: 13px; font-weight: 600; color: var(--muted); text-decoration: underline; text-underline-offset: 2px; padding: 4px 0; }
+/* ---------- main: map + card ---------- */
+#map { position: absolute; inset: 0; background: #e9ece8; }
+.top-float { position: absolute; top: calc(12px + var(--safe-t)); left: 12px; right: 12px; display: flex; justify-content: space-between; align-items: flex-start; pointer-events: none; z-index: 5; }
+.top-float > * { pointer-events: auto; }
+.chip-float { display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px; border-radius: 999px; background: var(--paper); box-shadow: 0 2px 12px rgba(38,22,15,.16); font-weight: 650; font-size: 14px; }
+.chip-float svg { width: 18px; height: 18px; }
+.card { position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; background: var(--paper); border-radius: 26px 26px 0 0; box-shadow: 0 -8px 30px rgba(38,22,15,.14); padding: 8px 20px calc(20px + var(--safe-b)); max-height: 46vh; overflow-y: auto; overscroll-behavior: contain; transition: max-height .28s ease; }
+.card.tall { max-height: 86vh; }
+.card.wait-mode { max-height: none; overflow: visible; }
+.handle { display: block; width: 100%; height: 22px; }
+.handle::before { content: ''; display: block; width: 42px; height: 5px; border-radius: 5px; background: var(--line); margin: 6px auto 0; }
+.card-inner { max-width: 520px; margin: 0 auto; }
+.card h2 { font-family: var(--display); font-weight: 800; font-size: 28px; letter-spacing: -0.03em; line-height: 1.05; }
+.card .sub { color: var(--muted); font-size: 15px; margin-top: 6px; }
+.people { display: flex; align-items: center; gap: 0; margin: 18px 0 18px; overflow-x: auto; scrollbar-width: none; padding: 4px 0; }
+.people::-webkit-scrollbar { display: none; }
+.person { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 72px; flex-shrink: 0; font-size: 12px; font-weight: 600; color: var(--muted); text-align: center; }
+.person span { max-width: 68px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.person.me span { color: var(--ink); }
+.wait-actions { display: grid; gap: 10px; }
+.linkrow { display: flex; justify-content: center; gap: 18px; flex-wrap: wrap; margin-top: 4px; }
+.myname { display: flex; align-items: center; gap: 10px; background: var(--mist); border-radius: 16px; padding: 4px 6px 4px 16px; margin-bottom: 14px; }
+.myname input { flex: 1; min-width: 0; height: 44px; border: 0; background: none; font-size: 16px; outline: none; }
+.myname small { font-size: 13px; color: var(--muted); }
 
-/* people */
-.people { list-style: none; position: relative; }
-.people::before { content: ''; position: absolute; left: 17px; top: 30px; bottom: 30px; width: 2px; background: repeating-linear-gradient(to bottom, var(--line) 0 4px, transparent 4px 8px); }
-.person { position: relative; display: flex; gap: 12px; align-items: flex-start; padding: 7px 0; }
-.dot { position: relative; z-index: 1; flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; background: var(--c); color: #fff; display: grid; place-items: center; font-family: var(--display); font-weight: 800; font-size: 15px; margin-top: 6px; box-shadow: 0 0 0 4px var(--paper); }
-.person-main { flex: 1; min-width: 0; }
-.person-name { display: block; width: 100%; border: 0; background: none; font-size: 13px; font-weight: 650; color: var(--muted); padding: 0 2px 4px; outline: none; }
-.person-name::placeholder { color: var(--faint); font-weight: 600; }
-.person-name:focus { color: var(--ink); }
-.field { position: relative; }
-.field input { width: 100%; height: 48px; border-radius: 14px; border: 1.5px solid var(--line); background: var(--paper); padding: 0 48px 0 14px; font-size: 16px; outline: none; transition: border-color .15s; }
-.field input::placeholder { color: var(--faint); }
-.field input:focus { border-color: var(--terra); }
-.field input.is-set { border-color: transparent; background: var(--mist); }
-.field-btn { position: absolute; right: 4px; top: 4px; width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; color: var(--muted); }
-.field-btn:hover { color: var(--terra); background: var(--terra-soft); }
-.field-btn svg { width: 20px; height: 20px; }
-.remove { flex-shrink: 0; width: 36px; height: 36px; margin-top: 26px; border-radius: 10px; display: grid; place-items: center; color: var(--faint); }
-.remove:hover { color: var(--bad); background: #fdeceb; }
-.remove svg { width: 18px; height: 18px; }
-.readonly { min-height: 48px; border-radius: 14px; background: var(--mist); padding: 12px 14px; font-size: 15px; }
-.readonly.waiting { background: none; border: 1.5px dashed var(--line); color: var(--faint); }
-.readonly.waiting::after { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--terra); margin-left: 8px; vertical-align: middle; animation: blink 1.4s infinite; }
+/* results */
+.res-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.filters { display: flex; gap: 8px; margin: 12px 0 2px; overflow-x: auto; scrollbar-width: none; }
+.filters::-webkit-scrollbar { display: none; }
+.fchip { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 999px; background: var(--mist); font-size: 14px; font-weight: 650; white-space: nowrap; }
+.fchip svg { width: 16px; height: 16px; }
+.people.small { margin: 10px 0 0; }
+.people.small .person { width: 56px; font-size: 11px; }
+.people.small .avatar { width: 32px; height: 32px; font-size: 13px; }
+.status { font-size: 14px; color: var(--muted); margin-top: 10px; }
+.status.busy::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--sun); margin-right: 8px; vertical-align: 1px; animation: blink 1s infinite; }
+.status.err { color: var(--bad); }
 @keyframes blink { 50% { opacity: .2; } }
+.banner { display: flex; gap: 12px; align-items: center; border-radius: 16px; padding: 12px 14px; margin-top: 12px; font-size: 14px; background: var(--sun-soft); }
+.banner .grow { flex: 1; min-width: 0; }
+.banner p { color: var(--muted); font-size: 13px; }
+.small-btn { flex-shrink: 0; font-size: 14px; font-weight: 650; border-radius: 999px; padding: 8px 14px; background: var(--ink); color: #fff; text-decoration: none; }
 
-.add-row { display: flex; align-items: center; gap: 12px; padding: 7px 0 0; color: var(--terra); font-weight: 650; font-size: 15px; }
-.add-row .dot { background: var(--paper); color: var(--terra); box-shadow: 0 0 0 4px var(--paper), inset 0 0 0 1.5px var(--terra); margin-top: 0; font-size: 20px; font-weight: 650; }
-
-.invite { display: flex; gap: 14px; align-items: center; width: 100%; text-align: left; padding: 16px; border-radius: 18px; background: var(--sun); color: var(--ink); transition: transform .12s; }
-.invite:active { transform: scale(.985); }
-.invite-ic { flex-shrink: 0; width: 44px; height: 44px; border-radius: 50%; background: var(--ink); color: var(--sun); display: grid; place-items: center; }
-.invite-ic svg { width: 22px; height: 22px; }
-.invite strong { display: block; font-family: var(--display); font-weight: 800; font-size: 18px; letter-spacing: -0.015em; line-height: 1.15; }
-.invite small { display: block; font-size: 13px; color: #5b4a2c; margin-top: 3px; line-height: 1.35; }
-
-.seg { display: grid; grid-template-columns: repeat(4, 1fr); background: var(--mist); border-radius: 14px; padding: 4px; gap: 4px; }
-.seg button { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 9px 2px 8px; border-radius: 10px; font-size: 13px; font-weight: 600; color: var(--muted); }
-.seg button svg { width: 22px; height: 22px; }
-.seg button[aria-checked="true"] { background: var(--paper); color: var(--terra); box-shadow: 0 1px 2px rgba(38,22,15,.08), 0 0 0 1px var(--line); }
-
-.chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip { height: 40px; padding: 0 16px; border-radius: 999px; font-size: 15px; font-weight: 600; box-shadow: inset 0 0 0 1.5px var(--line); color: var(--muted); }
-.chip[aria-pressed="true"] { background: var(--ink); color: #fff; box-shadow: none; }
-
-.cta-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; padding: 14px 20px calc(14px + var(--safe-b)); background: linear-gradient(to top, var(--paper) 70%, rgba(255,255,255,0)); }
-.cta { display: block; width: 100%; max-width: 480px; margin: 0 auto; height: 56px; border-radius: 18px; background: var(--terra); color: #fff; font-family: var(--display); font-weight: 800; font-size: 18px; letter-spacing: -0.01em; transition: background .15s, transform .12s; }
-.cta:active { transform: scale(.985); }
-.cta:disabled { background: #e9e4df; color: var(--faint); cursor: default; transform: none; }
-
-/* ---------- results screen ---------- */
-.results { position: relative; }
-.map-wrap { position: fixed; top: 0; left: 0; right: 0; height: 42vh; background: var(--mist); }
-#map { width: 100%; height: 100%; }
-.back { position: fixed; top: max(12px, env(safe-area-inset-top)); left: 12px; z-index: 10; display: flex; align-items: center; gap: 4px; height: 40px; padding: 0 14px 0 10px; border-radius: 999px; background: var(--paper); font-weight: 650; font-size: 15px; box-shadow: 0 2px 10px rgba(38,22,15,.16); }
-.back svg { width: 18px; height: 18px; }
-.sheet { position: relative; z-index: 3; margin-top: calc(42vh - 22px); min-height: calc(58vh + 22px); background: var(--paper); border-radius: 22px 22px 0 0; padding: 10px 16px calc(32px + var(--safe-b)); box-shadow: 0 -6px 24px rgba(38,22,15,.10); }
-.grab { width: 40px; height: 4px; border-radius: 4px; background: var(--line); margin: 0 auto 14px; }
-.sheet-inner { max-width: 560px; margin: 0 auto; }
-.res-title { font-family: var(--display); font-weight: 800; font-size: 26px; letter-spacing: -0.025em; line-height: 1.1; }
-.res-sub { color: var(--muted); font-size: 14px; margin-top: 4px; }
-.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 12px 0 4px; font-size: 13px; font-weight: 600; }
-.legend span { display: inline-flex; align-items: center; gap: 6px; }
-.legend i { width: 10px; height: 10px; border-radius: 50%; background: var(--c); }
-
-.list { list-style: none; margin-top: 10px; }
-.card { border-bottom: 1px solid var(--line); }
-.card-main { display: flex; gap: 12px; width: 100%; text-align: left; padding: 16px 0; }
+.list { list-style: none; margin-top: 6px; }
+.spot { border-bottom: 1px solid var(--line); }
+.spot:last-child { border-bottom: 0; }
+.spot-main { display: flex; gap: 12px; width: 100%; text-align: left; padding: 16px 0; }
 .rank { flex-shrink: 0; width: 28px; height: 28px; border-radius: 9px; background: var(--ink); color: #fff; display: grid; place-items: center; font-family: var(--display); font-weight: 800; font-size: 14px; margin-top: 1px; }
-.card.is-open .rank, .card.is-chosen .rank { background: var(--sun); color: var(--ink); }
-.card-body { flex: 1; min-width: 0; }
-.card-name { font-family: var(--display); font-weight: 650; font-size: 18px; letter-spacing: -0.015em; line-height: 1.2; }
-.card-meta { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 13px; color: var(--muted); margin-top: 2px; }
-.badge { display: inline-block; font-size: 12px; font-weight: 700; color: var(--terra-deep); background: var(--terra-soft); border-radius: 6px; padding: 1px 7px; margin-left: 6px; vertical-align: 2px; font-family: var(--body); letter-spacing: 0; }
-
-/* the fair line */
-.fair { margin: 14px 0 6px; }
-.track { position: relative; height: 22px; }
+.spot.is-open .rank, .spot.is-chosen .rank { background: var(--sun); color: var(--ink); }
+.spot-body { flex: 1; min-width: 0; display: block; }
+.spot-name { display: block; font-family: var(--display); font-weight: 650; font-size: 18px; letter-spacing: -0.015em; line-height: 1.2; }
+.spot-meta { display: flex; flex-wrap: wrap; gap: 2px 10px; font-size: 13px; color: var(--muted); margin-top: 2px; }
+.badge { display: inline-block; font-family: var(--body); font-size: 12px; font-weight: 700; color: var(--terra-deep); background: var(--terra-soft); border-radius: 6px; padding: 1px 7px; margin-left: 6px; vertical-align: 2px; letter-spacing: 0; }
+.fair { display: block; margin: 12px 0 4px; }
+.track { position: relative; display: block; height: 22px; }
 .track::before { content: ''; position: absolute; left: 0; right: 0; top: 10px; height: 2px; background: var(--line); border-radius: 2px; }
 .spread { position: absolute; top: 8px; height: 6px; border-radius: 6px; background: var(--sun); }
 .pin { position: absolute; top: 3px; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%; background: var(--c); box-shadow: 0 0 0 2.5px var(--paper); }
-.scale { display: flex; justify-content: space-between; font-size: 11px; color: var(--faint); margin-top: 2px; font-variant-numeric: tabular-nums; }
-.verdict { font-size: 14px; margin-top: 8px; }
-.verdict b { font-weight: 650; }
-.times { display: flex; flex-wrap: wrap; gap: 4px 12px; list-style: none; margin-top: 6px; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.times { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 6px; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .times > span { display: inline-flex; align-items: center; gap: 5px; }
 .times i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
 .times b { color: var(--ink); font-weight: 650; }
-
+.verdict { display: block; font-size: 14px; margin-top: 2px; }
 .more { padding: 0 0 18px 40px; }
 .more-status { font-size: 14px; font-weight: 650; margin-bottom: 10px; }
-.photos { display: flex; gap: 8px; overflow-x: auto; margin: 0 -16px 12px -40px; padding: 0 16px 0 40px; scrollbar-width: none; }
+.photos { display: flex; gap: 8px; overflow-x: auto; margin: 0 -20px 12px -40px; padding: 0 20px 0 40px; scrollbar-width: none; }
 .photos::-webkit-scrollbar { display: none; }
 .photos img { width: 132px; height: 96px; object-fit: cover; border-radius: 12px; flex-shrink: 0; background: var(--mist); }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; }
-.act { display: inline-flex; align-items: center; justify-content: center; height: 42px; padding: 0 16px; border-radius: 999px; font-size: 14px; font-weight: 650; text-decoration: none; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--line); }
-.act.primary { background: var(--terra); color: #fff; box-shadow: none; }
-.act.pick { background: var(--sun); box-shadow: none; }
-.act.picked { background: var(--sun-soft); box-shadow: none; }
+.act { display: inline-flex; align-items: center; justify-content: center; height: 42px; padding: 0 16px; border-radius: 999px; font-size: 14px; font-weight: 650; text-decoration: none; color: var(--ink); background: var(--mist); }
+.act.primary { background: var(--ink); color: #fff; }
+.act.pick { background: var(--sun); }
+.act.picked { background: var(--sun-soft); }
 .more-link { display: inline-block; margin-top: 12px; font-size: 14px; font-weight: 600; color: var(--terra); text-decoration: none; }
-.note { font-size: 13px; color: var(--muted); padding: 18px 0 0; }
+.note { font-size: 12px; color: var(--faint); padding: 14px 0 4px; }
+.restart { display: block; margin: 8px auto 0; }
 
-/* ---------- loading ---------- */
-.loading { position: fixed; inset: 0; z-index: 50; background: rgba(255,255,255,.94); display: grid; place-items: center; text-align: center; padding: 24px; }
-.loading svg { width: 160px; height: 80px; }
-.loading .curve { stroke-dasharray: 80; stroke-dashoffset: 80; animation: draw 1.1s ease-out forwards; }
-.loading .meet { transform-origin: 40px 30px; animation: meet 1.6s ease-in-out .5s infinite; }
-@keyframes draw { to { stroke-dashoffset: 0; } }
-@keyframes meet { 0%,100% { transform: scale(1); } 50% { transform: scale(1.25); } }
-.loading p { font-family: var(--display); font-weight: 650; font-size: 19px; margin-top: 14px; letter-spacing: -0.01em; }
-
-/* ---------- sheets ---------- */
+/* ---------- modals ---------- */
 .modal { position: fixed; inset: 0; z-index: 60; background: rgba(38,22,15,.4); display: flex; align-items: flex-end; justify-content: center; }
-.modal-card { width: 100%; max-width: 520px; background: var(--paper); border-radius: 24px 24px 0 0; padding: 22px 20px calc(22px + var(--safe-b)); animation: up .22s ease-out; }
+.modal-card { width: 100%; max-width: 520px; background: var(--paper); border-radius: 26px 26px 0 0; padding: 22px 20px calc(22px + var(--safe-b)); animation: up .22s ease-out; }
 @keyframes up { from { transform: translateY(24px); opacity: 0; } }
-.modal h2 { font-family: var(--display); font-weight: 800; font-size: 26px; letter-spacing: -0.025em; line-height: 1.1; }
-.modal p.lede { color: var(--muted); margin: 6px 0 18px; font-size: 15px; }
-.label { display: block; font-size: 13px; font-weight: 650; color: var(--muted); margin: 14px 0 6px; }
-.plain { width: 100%; height: 48px; border-radius: 14px; border: 1.5px solid var(--line); padding: 0 14px; font-size: 16px; outline: none; }
-.plain:focus { border-color: var(--terra); }
-.code-input { text-transform: uppercase; letter-spacing: .3em; font-family: var(--display); font-weight: 800; font-size: 22px; text-align: center; }
-.modal .cta { margin-top: 20px; }
-.modal .text-btn { display: block; margin: 12px auto 0; }
+.modal h3 { font-family: var(--display); font-weight: 800; font-size: 24px; letter-spacing: -0.02em; margin-bottom: 14px; }
+.modal h4 { font-size: 14px; font-weight: 650; color: var(--muted); margin: 18px 0 8px; }
+.seg { display: grid; grid-template-columns: repeat(4, 1fr); background: var(--mist); border-radius: 16px; padding: 4px; gap: 4px; }
+.seg button { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 10px 2px 8px; border-radius: 12px; font-size: 13px; font-weight: 600; color: var(--muted); }
+.seg button svg { width: 22px; height: 22px; }
+.seg button[aria-checked="true"] { background: var(--paper); color: var(--ink); box-shadow: 0 1px 3px rgba(38,22,15,.12); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { height: 42px; padding: 0 16px; border-radius: 999px; font-size: 15px; font-weight: 600; background: var(--mist); color: var(--muted); }
+.chip[aria-pressed="true"] { background: var(--ink); color: #fff; }
+.modal .pill { margin-top: 22px; }
+.code-input { width: 100%; height: 64px; border: 0; border-radius: 18px; background: var(--mist); text-align: center; font-family: var(--display); font-weight: 800; font-size: 28px; letter-spacing: .3em; text-transform: uppercase; outline: none; }
 
-.toast { position: fixed; left: 50%; bottom: calc(92px + var(--safe-b)); transform: translate(-50%, 12px); z-index: 70; max-width: calc(100% - 40px); background: var(--ink); color: #fff; padding: 11px 18px; border-radius: 14px; font-size: 14px; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; text-align: center; }
+.toast { position: fixed; left: 50%; top: calc(64px + var(--safe-t)); transform: translate(-50%, -8px); z-index: 70; max-width: calc(100% - 40px); background: var(--ink); color: #fff; padding: 11px 18px; border-radius: 14px; font-size: 14px; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; text-align: center; }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
-.pac-container { border-radius: 14px; border: 0; box-shadow: 0 8px 28px rgba(38,22,15,.16); margin-top: 6px; font-family: var(--body); }
-.pac-item { padding: 10px 14px; font-size: 14px; line-height: 1.4; border-top-color: var(--line); }
-.pac-item-query { font-size: 15px; color: var(--ink); }
-.pac-icon { display: none; }
-
 @media (min-width: 900px) {
-  .map-wrap { left: 440px; height: 100vh; }
-  .sheet { margin-top: 0; width: 440px; min-height: 100vh; border-radius: 0; box-shadow: 6px 0 24px rgba(38,22,15,.08); padding-top: 72px; }
-  .grab { display: none; }
-  .back { left: 16px; top: 16px; box-shadow: 0 0 0 1px var(--line); }
-  .toast { bottom: 32px; }
+  .card, .card.tall { left: 16px; right: auto; top: 16px; bottom: 16px; width: 420px; max-height: none; border-radius: 26px; overflow-y: auto; }
+  .card.wait-mode { top: auto; overflow: visible; }
+  .handle { display: none; }
+  .card-inner { padding-top: 12px; }
+  .top-float { left: 452px; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
-  .loading .curve { stroke-dashoffset: 0; }
 }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
-<!-- =================== PLAN =================== -->
-<section id="plan" class="screen is-active" aria-label="Plan a meetup">
-  <div class="plan">
-    <header class="topbar">
-      <div class="brand">
-        <svg width="34" height="24" viewBox="0 0 56 40" aria-hidden="true"><path d="M4 12C14 12 22 24 28 24S42 12 52 12" fill="none" stroke="#b5451b" stroke-width="4" stroke-linecap="round"/><circle cx="4" cy="12" r="4" fill="#b5451b" opacity=".45"/><circle cx="52" cy="12" r="4" fill="#b5451b" opacity=".45"/><circle cx="28" cy="24" r="10" fill="#FFD000"/><circle cx="28" cy="24" r="4" fill="#b5451b"/></svg>
+<!-- =================== START =================== -->
+<section id="start" class="view on" aria-label="Start">
+  <div class="start">
+    <div class="start-top">
+      <div class="wordmark">
+        <svg width="30" height="22" viewBox="0 0 56 40" aria-hidden="true"><path d="M4 12C14 12 22 24 28 24S42 12 52 12" fill="none" stroke="#b5451b" stroke-width="4" stroke-linecap="round"/><circle cx="28" cy="24" r="9" fill="#FFD000"/><circle cx="28" cy="24" r="3.6" fill="#b5451b"/></svg>
         midcamino
       </div>
-      <button class="link-btn" id="code-btn">Join with a code</button>
-    </header>
-
-    <div id="group-banner" class="banner banner-group" hidden>
-      <div class="grow">
-        <strong>Group plan</strong><span class="code-pill" id="group-code"></span>
-        <p id="group-sub">Anyone with the link can add where they're coming from.</p>
-      </div>
-      <button class="small-btn" id="share-link-btn">Share link</button>
+      <button class="textlink" id="code-link" type="button">Have a code?</button>
     </div>
 
-    <div id="chosen-plan" class="banner banner-chosen" hidden></div>
+    <div class="hero">
+      <svg class="hero-art" viewBox="0 0 300 120" aria-hidden="true">
+        <path d="M18 34 C 80 34, 110 92, 150 92 S 220 34, 282 34" fill="none" stroke="#ebe6e0" stroke-width="6" stroke-linecap="round" stroke-dasharray="2 12"/>
+        <g class="a"><circle cx="18" cy="34" r="14" fill="#b5451b"/></g>
+        <g class="b"><circle cx="282" cy="34" r="14" fill="#1f7a72"/></g>
+        <circle cx="150" cy="92" r="22" fill="#FFD000"/><circle cx="150" cy="92" r="8" fill="#26160f"/>
+      </svg>
+      <h1 id="start-title">Meet halfway.<br>Fairly.</h1>
+      <p id="start-lede">Add where you're coming from, send one link, and get places that are fair for everyone.</p>
+    </div>
 
-    <h1 class="title" id="plan-title">Where shall we meet?</h1>
-    <p class="lede" id="plan-lede">Send the group one link. Everyone adds where they're coming from, and the fairest spots appear as they do.</p>
-
-    <button class="invite" id="invite-btn">
-      <span class="invite-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1 1"/><path d="M14 10a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1-1"/></svg></span>
-      <span><strong>Share a link with the group</strong><small>Paste it in the group chat. You can add your own starting point after.</small></span>
-    </button>
-
-    <h2 class="h2" id="people-label">Starting points</h2>
-    <ul id="people" class="people" aria-labelledby="people-label"></ul>
-    <button class="add-row" id="add-btn"><span class="dot" aria-hidden="true">+</span><span id="add-label">Add someone yourself</span></button>
-
-    <section class="live" id="live" aria-live="polite">
-      <h2 class="h2">Fairest spots right now</h2>
-      <p class="live-status" id="live-status"></p>
-      <ol class="mini" id="mini"></ol>
-    </section>
-
-    <h2 class="h2" id="mode-label">Getting there</h2>
-    <div class="seg" role="radiogroup" aria-labelledby="mode-label" id="modes"></div>
-
-    <h2 class="h2" id="type-label">Looking for</h2>
-    <div class="chips" role="group" aria-labelledby="type-label" id="types"></div>
-  </div>
-
-  <div class="cta-bar"><button class="cta" id="find-btn" disabled>Add at least two starting points</button></div>
-</section>
-
-<!-- =================== RESULTS =================== -->
-<section id="results" class="screen results" aria-label="Meetup spots">
-  <div class="map-wrap">
-    <div id="map" role="region" aria-label="Map of spots"></div>
-  </div>
-  <button class="back" id="back-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Edit</button>
-  <div class="sheet">
-    <div class="grab" aria-hidden="true"></div>
-    <div class="sheet-inner">
-      <div id="chosen-res" class="banner banner-chosen" hidden style="margin:0 0 14px"></div>
-      <div id="stale" class="banner banner-results" hidden style="margin:0 0 14px">
-        <div class="grow"><strong id="stale-title">Updating for the latest changes</strong><p id="stale-sub">These spots will refresh in a moment.</p></div>
-      </div>
-      <h1 class="res-title" id="res-title"></h1>
-      <p class="res-sub" id="res-sub"></p>
-      <div class="legend" id="legend"></div>
-      <ol class="list" id="list"></ol>
-      <p class="note">Spots are ranked by the longest anyone has to travel, in 10-minute steps, then by how evenly the time is split. Times are Google's current estimates.</p>
+    <div class="start-actions">
+      <input class="namebox" id="start-name" placeholder="Your name" maxlength="24" autocomplete="given-name" hidden />
+      <button class="pill primary" id="gps-btn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+        <span id="gps-label">Use my location</span>
+      </button>
+      <button class="pill ghost" id="addr-btn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        Enter an address
+      </button>
+      <button class="again" id="again-btn" type="button" hidden></button>
     </div>
   </div>
 </section>
 
-<!-- =================== OVERLAYS =================== -->
-<div id="loading" class="loading" hidden role="status" aria-live="polite">
-  <div>
-    <svg viewBox="0 0 80 40" aria-hidden="true"><path class="curve" d="M6 14C20 14 30 30 40 30S60 14 74 14" fill="none" stroke="#b5451b" stroke-width="4" stroke-linecap="round"/><circle cx="6" cy="14" r="5" fill="#b5451b" opacity=".45"/><circle cx="74" cy="14" r="5" fill="#b5451b" opacity=".45"/><g class="meet"><circle cx="40" cy="30" r="9" fill="#FFD000"/><circle cx="40" cy="30" r="3.5" fill="#b5451b"/></g></svg>
-    <p id="loading-msg">Working out the middle</p>
-  </div>
-</div>
-
-<div id="join-modal" class="modal" hidden>
-  <form class="modal-card" id="join-form">
-    <h2 id="join-title">You're invited</h2>
-    <p class="lede" id="join-lede">Add where you're coming from and Midcamino finds somewhere fair for everyone.</p>
-    <label class="label" for="join-name">Your name</label>
-    <input class="plain" id="join-name" autocomplete="given-name" maxlength="24" required />
-    <label class="label" for="join-addr">Where you're coming from</label>
-    <div class="field">
-      <input id="join-addr" placeholder="Address, station or place" autocomplete="off" />
-      <button class="field-btn" type="button" id="join-gps" aria-label="Use my current location"></button>
+<!-- =================== SEARCH =================== -->
+<section id="search" class="view" aria-label="Find a starting point">
+  <div class="search-bar">
+    <button class="icon-btn" id="search-back" type="button" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="search-fields">
+      <input class="search-name" id="search-name" placeholder="Their name (optional)" maxlength="24" hidden />
+      <input class="search-input" id="search-input" type="search" enterkeyhint="search" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Address, station or place" aria-label="Address, station or place" />
     </div>
-    <button class="cta" type="submit" id="join-submit">Join the group</button>
-    <button class="text-btn" type="button" data-close>Not now</button>
-  </form>
+  </div>
+  <ul class="suggestions" id="suggestions" role="listbox" aria-label="Suggestions"></ul>
+</section>
+
+<!-- =================== MAIN =================== -->
+<section id="main" class="view" aria-label="Meetup map">
+  <div id="map" role="region" aria-label="Map"></div>
+  <div class="top-float">
+    <div class="chip-float" aria-hidden="true">
+      <svg viewBox="0 0 56 40"><path d="M4 12C14 12 22 24 28 24S42 12 52 12" fill="none" stroke="#b5451b" stroke-width="5" stroke-linecap="round"/><circle cx="28" cy="24" r="10" fill="#FFD000"/></svg>
+      <span id="float-label">midcamino</span>
+    </div>
+  </div>
+
+  <div class="card" id="card">
+    <button class="handle" id="handle" type="button" aria-label="Expand the list"></button>
+    <div class="card-inner">
+
+      <!-- waiting for others -->
+      <div id="wait-pane">
+        <h2 id="wait-title">Send this to whoever you're meeting</h2>
+        <p class="sub" id="wait-sub">When they add where they're coming from, fair spots appear here.</p>
+        <div class="people" id="people-wait"></div>
+        <div class="myname" id="myname-row" hidden>
+          <input id="myname" placeholder="Add your name" maxlength="24" autocomplete="given-name" aria-label="Your name" />
+          <small>so friends know it's you</small>
+        </div>
+        <div class="wait-actions">
+          <button class="pill sun" id="share-btn" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M12 3v12M7 8l5-5 5 5"/></svg>
+            <span id="share-label">Send the link</span>
+          </button>
+        </div>
+        <div class="linkrow">
+          <button class="textlink" id="copy-btn" type="button">Copy link</button>
+          <button class="textlink" id="add-manual" type="button">Add someone's address</button>
+        </div>
+      </div>
+
+      <!-- results -->
+      <div id="res-pane" hidden>
+        <div class="res-head">
+          <h2 id="res-title">Fair spots</h2>
+          <button class="small-btn" id="share-btn-2" type="button">Invite</button>
+        </div>
+        <div class="filters">
+          <button class="fchip" id="mode-chip" type="button"></button>
+          <button class="fchip" id="type-chip" type="button"></button>
+        </div>
+        <div class="people small" id="people-res"></div>
+        <p class="status" id="status"></p>
+        <div id="chosen" class="banner" hidden></div>
+        <ol class="list" id="list"></ol>
+        <p class="note">Ranked by the longest anyone travels, in 10-minute steps, then by how evenly the time is split. Times are Google's current estimates.</p>
+        <button class="textlink restart" id="restart" type="button">Start a new plan</button>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- =================== MODALS =================== -->
+<div id="filters-modal" class="modal" hidden>
+  <div class="modal-card" role="dialog" aria-labelledby="filters-title">
+    <h3 id="filters-title">What are you after?</h3>
+    <h4>Getting there</h4>
+    <div class="seg" role="radiogroup" id="modes"></div>
+    <h4>Looking for</h4>
+    <div class="chips" role="group" id="types"></div>
+    <button class="pill primary" type="button" data-close>Done</button>
+  </div>
 </div>
 
 <div id="code-modal" class="modal" hidden>
   <form class="modal-card" id="code-form">
-    <h2>Join a group</h2>
-    <p class="lede">Enter the 6-character code from your invite.</p>
-    <label class="label sr" for="code-input">Group code</label>
-    <input class="plain code-input" id="code-input" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="K7P2QX" required />
-    <button class="cta" type="submit">Join</button>
-    <button class="text-btn" type="button" data-close>Cancel</button>
+    <h3>Join with a code</h3>
+    <input class="code-input" id="code-input" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="K7P2QX" aria-label="Group code" required />
+    <button class="pill primary" type="submit">Join</button>
   </form>
 </div>
 
@@ -350,10 +354,10 @@ const MAX_PEOPLE = 5;
 const MAX_RESULTS = 8;
 const COLORS = ['#b5451b', '#1f7a72', '#4a4fb3', '#a87800', '#9b3d7a'];
 const MODES = {
-  DRIVING:   { label: 'Drive',   dir: 'driving',   icon: '<path d="M5 17h14M6 17v2M18 17v2M4 13l2-5.5A2 2 0 0 1 7.9 6h8.2a2 2 0 0 1 1.9 1.5L20 13v4H4z"/><circle cx="8" cy="13.5" r="1"/><circle cx="16" cy="13.5" r="1"/>' },
-  TRANSIT:   { label: 'Transit', dir: 'transit',   icon: '<rect x="6" y="3" width="12" height="14" rx="3"/><path d="M6 11h12M9 21l1.5-4M15 21l-1.5-4"/><circle cx="9" cy="14" r=".8"/><circle cx="15" cy="14" r=".8"/>' },
-  WALKING:   { label: 'Walk',    dir: 'walking',   icon: '<circle cx="13" cy="4.5" r="1.8"/><path d="M10 21l2-6 3 3v3M9 12l2-4 3 1 2 3M11 8l-2 6"/>' },
-  BICYCLING: { label: 'Cycle',   dir: 'bicycling', icon: '<circle cx="6" cy="16" r="3.5"/><circle cx="18" cy="16" r="3.5"/><path d="M6 16l4-7h5l3 7M10 9l3 7M14 5h2"/>' },
+  DRIVING:   { label: 'Drive',   how: 'by car',           dir: 'driving',   icon: '<path d="M5 17h14M6 17v2M18 17v2M4 13l2-5.5A2 2 0 0 1 7.9 6h8.2a2 2 0 0 1 1.9 1.5L20 13v4H4z"/><circle cx="8" cy="13.5" r="1"/><circle cx="16" cy="13.5" r="1"/>' },
+  TRANSIT:   { label: 'Transit', how: 'by public transit', dir: 'transit',   icon: '<rect x="6" y="3" width="12" height="14" rx="3"/><path d="M6 11h12M9 21l1.5-4M15 21l-1.5-4"/><circle cx="9" cy="14" r=".8"/><circle cx="15" cy="14" r=".8"/>' },
+  WALKING:   { label: 'Walk',    how: 'on foot',          dir: 'walking',   icon: '<circle cx="13" cy="4.5" r="1.8"/><path d="M10 21l2-6 3 3v3M9 12l2-4 3 1 2 3M11 8l-2 6"/>' },
+  BICYCLING: { label: 'Cycle',   how: 'by bike',          dir: 'bicycling', icon: '<circle cx="6" cy="16" r="3.5"/><circle cx="18" cy="16" r="3.5"/><path d="M6 16l4-7h5l3 7M10 9l3 7M14 5h2"/>' },
 };
 const TYPES = [['bar', 'Bars'], ['restaurant', 'Restaurants'], ['cafe', 'Cafés'], ['park', 'Parks'], ['movie_theater', 'Cinemas'], ['night_club', 'Clubs']];
 const TYPE_LABEL = { bar: 'Bar', night_club: 'Club', restaurant: 'Restaurant', cafe: 'Café', park: 'Park', movie_theater: 'Cinema', bakery: 'Café', food: 'Restaurant' };
@@ -371,7 +375,6 @@ const EXCLUDE_CHAINS = new Set([
   "Cracker Barrel","Bob Evans","Waffle House","Friendly's","Panera Bread","Boston Market","Qdoba","Moe's Southwest Grill","Jollibee",
   "Wetherspoon","JD Wetherspoon","Harvester","Toby Carvery","Frankie & Benny's","Bella Italia","Zizzi","ASK Italian","Prezzo","Hard Rock Cafe"
 ].map(n => n.toLowerCase().replace(/[^a-z0-9]/g, '')));
-// short names must match exactly; longer ones also match as a prefix ("Applebee's Grill + Bar")
 function isChain(name) {
   const n = String(name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
   if (EXCLUDE_CHAINS.has(n)) return true;
@@ -380,7 +383,8 @@ function isChain(name) {
 }
 const ICON = {
   gps: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>',
-  x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  pin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>',
+  down: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',
 };
 
 // ───────────────────────── helpers ─────────────────────────
@@ -401,316 +405,292 @@ function toast(msg) {
   const t = $('#toast'); t.textContent = msg; t.classList.add('show');
   clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
 }
-function showLoading(msg) { $('#loading-msg').textContent = msg; $('#loading').hidden = false; }
-function setLoading(msg) { $('#loading-msg').textContent = msg; }
-function hideLoading() { $('#loading').hidden = true; }
 function haversine(a, b) {
   const R = 6371, r = x => x * Math.PI / 180;
   const dLat = r(b.lat - a.lat), dLng = r(b.lng - a.lng);
   const h = Math.sin(dLat / 2) ** 2 + Math.cos(r(a.lat)) * Math.cos(r(b.lat)) * Math.sin(dLng / 2) ** 2;
   return 2 * R * Math.asin(Math.sqrt(h));
 }
-function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
-function openModal(id) { $(id).hidden = false; const f = $(id).querySelector('input'); if (f) setTimeout(() => f.focus(), 60); }
-function closeModal(id) { $(id).hidden = true; }
-document.querySelectorAll('.modal').forEach(m => {
-  m.addEventListener('click', e => { if (e.target === m || e.target.closest('[data-close]')) m.hidden = true; });
-});
-document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.modal').forEach(m => m.hidden = true); });
+function shortPlace(s) { return String(s || '').split(',').slice(0, 2).join(',').trim(); }
+function initial(name) { return (String(name || '').trim()[0] || '?').toUpperCase(); }
+document.querySelectorAll('.modal').forEach(m => m.addEventListener('click', e => { if (e.target === m || e.target.closest('[data-close]')) m.hidden = true; }));
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { document.querySelectorAll('.modal').forEach(m => m.hidden = true); if ($('#search').classList.contains('on')) closeSearch(); } });
 
 // ───────────────────────── state ─────────────────────────
 let supa = null;
 try { supa = window.supabase.createClient(SUPA_URL, SUPA_KEY); } catch (e) { console.warn('Supabase unavailable', e); }
 
 const S = {
-  people: [],          // { key, id?, slot, name, address, lat, lng, owner }
+  people: [],            // { key, id?, slot, name, address, lat, lng, owner }
   mySlot: 0,
   mode: store.get('mode', 'DRIVING'),
   types: store.get('types', ['bar']),
-  results: null,       // { at, by, sig, mode, people:[{slot,name}], spots:[...] }
-  chosen: null,        // { id, name, by }
-  session: null,       // { id, code }
+  results: null,         // { at, by, byClient, sig, mode, people:[{slot,name}], spots:[...] }
+  chosen: null,          // { id, name, by, byClient }
+  session: null,         // { id, code }
   sessionState: {},
   channel: null,
+  invite: null,          // { sess, hostName, count } while an invited friend is on the start screen
 };
 let localSeq = 0;
-let G = null;          // google services once loaded
+let G = null;
 let map = null, mapMarkers = [], placeMarkers = new Map();
 
 const myName = () => store.get('name', '');
 const isMine = p => p.owner === CLIENT_ID;
 const isSelf = p => isMine(p) && p.slot === S.mySlot;
-function nameOf(slot, fallbackName) {
-  if (slot === S.mySlot && (!S.session || S.people.some(p => p.slot === slot && isMine(p)))) return 'You';
-  const p = S.people.find(x => x.slot === slot);
-  return (p && p.name) || fallbackName || 'Person ' + (slot + 1);
-}
-function hasLoc(p) { return typeof p.lat === 'number' && typeof p.lng === 'number'; }
+const me = () => S.people.find(isSelf);
+function hasLoc(p) { return !!p && typeof p.lat === 'number' && typeof p.lng === 'number'; }
 function readyPeople() { return S.people.filter(p => p.address.trim() && hasLoc(p)); }
 function signature() {
   return readyPeople().map(p => p.slot + ':' + p.lat.toFixed(4) + ',' + p.lng.toFixed(4)).sort().join('|') + '|' + S.mode + '|' + [...S.types].sort().join(',');
 }
 function nextFreeSlot(taken) { for (let i = 0; i < MAX_PEOPLE; i++) if (!taken.includes(i)) return i; return -1; }
-
-// ───────────────────────── plan screen: people ─────────────────────────
+function displayName(p) {
+  if (isSelf(p)) return 'You';
+  return p.name || (isMine(p) ? 'Friend' : 'Someone');
+}
+function nameOfSlot(slot, fallback) {
+  const p = S.people.find(x => x.slot === slot);
+  if (p) return displayName(p);
+  return fallback || 'Someone';
+}
 function localPerson(slot, extra = {}) {
   return { key: 'l' + (localSeq++), slot, name: '', address: '', lat: null, lng: null, owner: CLIENT_ID, ...extra };
 }
 
-function renderPeople() {
-  const ul = $('#people');
-  const keys = new Set(S.people.map(p => p.key));
-  [...ul.children].forEach(li => { if (!keys.has(li.dataset.key)) li.remove(); });
-  S.people.sort((a, b) => a.slot - b.slot).forEach(p => {
-    let li = ul.querySelector(`[data-key="${CSS.escape(p.key)}"]`);
-    if (!li || li.dataset.editable !== String(isMine(p))) { if (li) li.remove(); li = buildRow(p); }
-    ul.appendChild(li);
-    updateRow(li, p);
-  });
-  $('#add-btn').hidden = S.people.length >= MAX_PEOPLE;
-  updateCTA();
-  updateInvite();
+// ───────────────────────── views ─────────────────────────
+function show(view) {
+  ['#start', '#main'].forEach(id => $(id).classList.toggle('on', id === '#' + view));
+}
+// Decide what to show from the state. Called after anything changes.
+function route() {
+  const m = me();
+  if (!hasLoc(m)) { renderStart(); show('start'); return; }
+  show('main');
+  ensureMap();
+  const n = readyPeople().length;
+  const resultsMode = n >= 2;
+  $('#wait-pane').hidden = resultsMode;
+  $('#res-pane').hidden = !resultsMode;
+  $('#card').classList.toggle('wait-mode', !resultsMode);
+  if (!resultsMode) { $('#card').classList.remove('tall'); renderWait(); }
+  else renderResultsPane();
+  drawMap();
 }
 
-function buildRow(p) {
-  const li = document.createElement('li');
-  li.className = 'person';
-  li.dataset.key = p.key;
-  li.dataset.editable = String(isMine(p));
-  if (isMine(p)) {
-    const self = isSelf(p);
-    li.innerHTML = `
-      <span class="dot" aria-hidden="true"></span>
-      <div class="person-main">
-        ${self ? '<input class="person-name" maxlength="24" placeholder="Your name" aria-label="Your name" autocomplete="given-name" />' : '<input class="person-name" maxlength="24" placeholder="Add a name (optional)" aria-label="Name" />'}
-        <div class="field">
-          <input class="addr" autocomplete="off" placeholder="${self ? 'Where are you coming from?' : 'Where are they coming from?'}" aria-label="${self ? 'Your starting point' : 'Their starting point'}" />
-          <button class="field-btn gps" type="button" aria-label="Use my current location">${ICON.gps}</button>
-        </div>
-      </div>
-      ${self ? '' : `<button class="remove" type="button" aria-label="Remove this person">${ICON.x}</button>`}`;
-    const addr = li.querySelector('.addr');
-    addr.addEventListener('input', () => {
-      p.address = addr.value; p.lat = p.lng = null;
-      addr.classList.remove('is-set'); updateCTA();
-    });
-    addr.addEventListener('change', () => resolveTyped(p, addr));
-    addr.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addr.blur(); } });
-    li.querySelector('.gps').addEventListener('click', () => useGPS(p, addr));
-    const nm = li.querySelector('input.person-name');
-    if (nm) nm.addEventListener('change', () => {
-      p.name = nm.value.trim();
-      if (self) store.set('name', p.name);
-      updateRow(li, p); commit(p);
-    });
-    const rm = li.querySelector('.remove');
-    if (rm) rm.addEventListener('click', () => removePerson(p));
-    attachAutocomplete(addr, place => {
-      if (!place.geometry) return;
-      p.address = addr.value; p.lat = place.geometry.location.lat(); p.lng = place.geometry.location.lng();
-      addr.classList.add('is-set'); commit(p);
-    });
+// ───────────────────────── start screen ─────────────────────────
+function renderStart() {
+  const inv = S.invite;
+  $('#start-name').hidden = !inv;
+  if (inv) {
+    $('#start-title').textContent = inv.hostName ? `${inv.hostName} wants to meet up.` : 'You’re invited to meet up.';
+    $('#start-lede').textContent = `Add where you’re coming from and Midcamino finds somewhere fair for ${inv.count === 1 ? 'both of you' : inv.count > 1 ? 'all ' + (inv.count + 1) + ' of you' : 'everyone'}.`;
+    if (!$('#start-name').value) $('#start-name').value = myName();
   } else {
-    li.innerHTML = `
-      <span class="dot" aria-hidden="true"></span>
-      <div class="person-main"><span class="person-name"></span><div class="readonly"></div></div>`;
+    $('#start-title').innerHTML = 'Meet halfway.<br>Fairly.';
+    $('#start-lede').textContent = 'Add where you’re coming from, send one link, and get places that are fair for everyone.';
   }
-  return li;
+  const last = store.get('lastStart', null);
+  const again = $('#again-btn');
+  if (last && last.address && typeof last.lat === 'number') {
+    again.hidden = false;
+    again.innerHTML = `${ICON.pin.replace('<svg', '<svg width="18" height="18"')}<span>Same as last time: <b>${esc(shortPlace(last.address))}</b></span>`;
+  } else again.hidden = true;
 }
-
-function updateRow(li, p) {
-  const dot = li.querySelector('.dot');
-  dot.style.setProperty('--c', COLORS[p.slot % COLORS.length]);
-  const label = isSelf(p) ? (p.name || myName() || 'You') : (p.name || '');
-  dot.textContent = (label.trim()[0] || String(p.slot + 1)).toUpperCase();
-  if (isMine(p)) {
-    const addr = li.querySelector('.addr');
-    if (document.activeElement !== addr && addr.value !== p.address) addr.value = p.address;
-    addr.classList.toggle('is-set', hasLoc(p) && !!p.address);
-    const nm = li.querySelector('input.person-name');
-    if (nm && document.activeElement !== nm) nm.value = isSelf(p) ? (p.name || myName()) : p.name;
-  } else {
-    li.querySelector('.person-name').textContent = p.name || 'Someone';
-    const ro = li.querySelector('.readonly');
-    ro.textContent = p.address || 'Adding where they’re coming from';
-    ro.classList.toggle('waiting', !p.address);
-  }
+function startNameOK() {
+  if (!S.invite) return true;
+  const v = $('#start-name').value.trim();
+  if (!v) { $('#start-name').focus(); toast('Add your name so the group knows who you are.'); return false; }
+  store.set('name', v);
+  return true;
 }
+$('#gps-btn').addEventListener('click', () => { if (startNameOK()) locateMe(); });
+$('#addr-btn').addEventListener('click', () => { if (startNameOK()) openSearch({ forSelf: true }); });
+$('#again-btn').addEventListener('click', () => {
+  if (!startNameOK()) return;
+  const l = store.get('lastStart', null); if (l) setMyStart(l.address, l.lat, l.lng);
+});
+$('#code-link').addEventListener('click', () => { $('#code-input').value = ''; $('#code-modal').hidden = false; setTimeout(() => $('#code-input').focus(), 60); });
+$('#code-input').addEventListener('input', e => { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); });
+$('#code-form').addEventListener('submit', e => { e.preventDefault(); $('#code-modal').hidden = true; openGroup($('#code-input').value); });
 
-async function addPerson() {
-  if (S.people.length >= MAX_PEOPLE) return;
-  if (S.session) {
-    const row = await insertParticipant({ name: '', address: '' });
-    if (!row) return;
-    upsertPersonFromRow(row); renderPeople();
-  } else {
-    S.people.push(localPerson(nextFreeSlot(S.people.map(p => p.slot))));
-    renderPeople();
-  }
-  const rows = $('#people').querySelectorAll('.person');
-  const last = rows[rows.length - 1]; const inp = last && last.querySelector('.addr');
-  if (inp) inp.focus();
-}
-
-async function removePerson(p) {
-  S.people = S.people.filter(x => x !== p);
-  renderPeople();
-  scheduleAuto(true);
-  if (S.session && p.id) await supa.from('participants').delete().eq('id', p.id);
-}
-
-async function resolveTyped(p, input) {
-  const text = input.value.trim();
-  if (!text || hasLoc(p) || !G) return;
-  try {
-    const loc = await geocode(text);
-    if (input.value.trim() !== text) return;
-    p.address = text; p.lat = loc.lat; p.lng = loc.lng;
-    input.classList.add('is-set'); commit(p);
-  } catch (e) { if (input.value.trim() === text) toast(e.message); }
-}
-
-function useGPS(p, input) {
-  if (!navigator.geolocation) { toast('This browser can’t share your location. Type an address instead.'); return; }
-  input.placeholder = 'Finding you…';
+function locateMe(then) {
+  if (!navigator.geolocation) { toast('This browser can’t share your location. Enter an address instead.'); return; }
+  const lbl = $('#gps-label'); const prev = lbl.textContent; lbl.textContent = 'Finding you…';
   navigator.geolocation.getCurrentPosition(async pos => {
     const lat = pos.coords.latitude, lng = pos.coords.longitude;
-    let label = 'My current location';
+    let label = 'Current location';
     try { if (G) label = await reverseGeocode(lat, lng); } catch {}
-    p.address = label; p.lat = lat; p.lng = lng;
-    input.value = label; input.classList.add('is-set');
-    commit(p);
+    lbl.textContent = prev;
+    (then || setMyStart)(label, lat, lng);
   }, () => {
-    input.placeholder = 'Where are you coming from?';
-    toast('Location access was blocked. Type an address instead, or allow location in your browser settings.');
+    lbl.textContent = prev;
+    toast('Location is blocked for this site. Enter an address instead, or allow location in your browser settings.');
   }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 });
 }
 
-// Place any of my starting points that have text but no map position yet
-// (typed without picking a suggestion, then the page was closed).
-const resolving = new Set(), unresolvable = new Set();
-function resolvePending() {
-  if (!G) return;
-  S.people.filter(p => isMine(p) && p.address.trim() && !hasLoc(p)).forEach(async p => {
-    const text = p.address.trim();
-    if (resolving.has(p.key) || unresolvable.has(text)) return;
-    resolving.add(p.key);
-    try { const l = await geocode(text); if (p.address.trim() === text) { p.lat = l.lat; p.lng = l.lng; renderPeople(); commit(p); } }
-    catch { unresolvable.add(text); }
-    finally { resolving.delete(p.key); }
+// The one place my starting point gets set.
+async function setMyStart(address, lat, lng) {
+  store.set('lastStart', { address, lat, lng });
+  if (S.invite) { await joinInvite(address, lat, lng); return; }
+  let m = me();
+  if (!m) { m = localPerson(S.mySlot); S.people.push(m); }
+  m.address = address; m.lat = lat; m.lng = lng; m.name = m.name || myName();
+  commit(m);
+  route();
+  if (!S.session) ensureSession();
+}
+
+// ───────────────────────── search screen ─────────────────────────
+let searchCtx = null, predTimer = null, acSvc = null, acToken = null;
+function openSearch(ctx) {
+  searchCtx = ctx;
+  const target = ctx.person;
+  $('#search-name').hidden = !!ctx.forSelf;
+  $('#search-name').value = target ? target.name : '';
+  $('#search-input').value = target ? target.address : '';
+  $('#search-input').placeholder = ctx.forSelf ? 'Where are you coming from?' : 'Where are they coming from?';
+  $('#search').classList.add('on');
+  renderSuggestions([]);
+  $('#search-input').focus();   // synchronous, so iPhone opens the keyboard
+  if ($('#search-input').value) predict();
+}
+function closeSearch() { $('#search').classList.remove('on'); searchCtx = null; acToken = null; }
+$('#search-back').addEventListener('click', closeSearch);
+$('#search-input').addEventListener('input', () => { clearTimeout(predTimer); predTimer = setTimeout(predict, 180); });
+$('#search-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); const first = $('#suggestions .sugg[data-pid]'); if (first) first.click(); else geocodeTyped(); }
+});
+function predict() {
+  const q = $('#search-input').value.trim();
+  if (!q) { renderSuggestions([]); return; }
+  if (!G) { renderSuggestions([], 'Loading maps…'); return; }
+  if (!acSvc) acSvc = new google.maps.places.AutocompleteService();
+  if (!acToken) acToken = new google.maps.places.AutocompleteSessionToken();
+  const bias = hasLoc(me()) ? me() : store.get('lastStart', null);
+  const req = { input: q, sessionToken: acToken };
+  if (bias && typeof bias.lat === 'number') req.locationBias = { center: { lat: bias.lat, lng: bias.lng }, radius: 30000 };
+  acSvc.getPlacePredictions(req, (preds, status) => {
+    if ($('#search-input').value.trim() !== q) return;
+    if (status === 'OK') renderSuggestions(preds);
+    else if (status === 'ZERO_RESULTS') renderSuggestions([], 'No matches. Try a street, neighbourhood or station.');
+    else renderSuggestions([], 'Suggestions aren’t loading. Press search to look it up.');
   });
 }
-
-// persist a person (session only)
-const commitQueue = new Map();
-function commit(p) {
-  if (isSelf(p)) store.set('lastStart', { address: p.address, lat: p.lat, lng: p.lng });
-  updateCTA();
-  scheduleAuto(true);
-  if (!S.session || !p.id) return;
-  clearTimeout(commitQueue.get(p.key));
-  commitQueue.set(p.key, setTimeout(async () => {
-    const { error } = await supa.from('participants').update({
-      name: p.name, address: p.address, lat: hasLoc(p) ? p.lat : null, lng: hasLoc(p) ? p.lng : null, updated_at: new Date().toISOString(),
-    }).eq('id', p.id);
-    if (error) toast('Couldn’t save that to the group. Check your connection.');
-  }, 250));
+function renderSuggestions(preds, note) {
+  const gpsRow = searchCtx && searchCtx.forSelf
+    ? `<li><button class="sugg gps" type="button" data-gps="1"><span class="sugg-ic">${ICON.gps}</span><span><span class="sugg-main">Use my current location</span></span></button></li>` : '';
+  $('#suggestions').innerHTML = gpsRow + preds.map(p => {
+    const sf = p.structured_formatting || {};
+    return `<li><button class="sugg" type="button" data-pid="${esc(p.place_id)}" data-desc="${esc(p.description)}"><span class="sugg-ic">${ICON.pin}</span><span><span class="sugg-main">${esc(sf.main_text || p.description)}</span><span class="sugg-sub">${esc(sf.secondary_text || '')}</span></span></button></li>`;
+  }).join('') + (note ? `<li class="search-note">${esc(note)}</li>` : '') + (preds.length ? '<li class="powered">Suggestions by Google</li>' : '');
 }
-
-// ───────────────────────── plan screen: mode, types, CTA ─────────────────────────
-function renderModes() {
-  $('#modes').innerHTML = Object.entries(MODES).map(([k, m]) =>
-    `<button type="button" role="radio" aria-checked="${S.mode === k}" data-mode="${k}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${m.icon}</svg>${m.label}</button>`).join('');
-}
-function renderTypes() {
-  $('#types').innerHTML = TYPES.map(([k, l]) => `<button type="button" class="chip" aria-pressed="${S.types.includes(k)}" data-type="${k}">${l}</button>`).join('');
-}
-$('#modes').addEventListener('click', e => {
-  const b = e.target.closest('[data-mode]'); if (!b) return;
-  S.mode = b.dataset.mode; store.set('mode', S.mode); renderModes(); pushState({ mode: S.mode }); scheduleAuto(true);
+$('#suggestions').addEventListener('click', async e => {
+  const b = e.target.closest('.sugg'); if (!b) return;
+  if (b.dataset.gps) { const ctx = searchCtx; closeSearch(); locateMe((a, la, ln) => finishSearch(ctx, a, la, ln)); return; }
+  try {
+    const loc = await geocodePlaceId(b.dataset.pid);
+    finishSearch(searchCtx, b.dataset.desc.replace(/, (USA|United States|Ireland|UK|United Kingdom)$/, ''), loc.lat, loc.lng);
+  } catch { toast('Couldn’t place that one. Try another suggestion.'); }
 });
-$('#types').addEventListener('click', e => {
-  const b = e.target.closest('[data-type]'); if (!b) return;
-  const t = b.dataset.type;
-  if (S.types.includes(t)) { if (S.types.length > 1) S.types = S.types.filter(x => x !== t); }
-  else S.types = [...S.types, t];
-  store.set('types', S.types); renderTypes(); pushState({ types: S.types }); scheduleAuto(true);
-});
-
-function updateCTA() {
-  const btn = $('#find-btn');
-  const n = readyPeople().length;
-  if (S.failedSig && S.failedSig !== signature()) { S.failedSig = null; S.autoError = null; }
-  if (S.results && $('#results').classList.contains('is-active')) $('#stale').hidden = !(S.results.sig !== signature() && n >= 2);
-  if (S.results && n >= 2) {
-    btn.disabled = false;
-    btn.textContent = `See ${S.results.spots.length === 1 ? 'the spot' : 'all ' + S.results.spots.length + ' spots'} on the map`;
-  } else {
-    btn.disabled = true;
-    btn.textContent = n >= 2 ? (S.autoError ? 'No spots found yet' : 'Finding fair spots\u2026') : (S.session ? 'Waiting for a second starting point' : 'Add at least two starting points');
-  }
-  renderLive();
+async function geocodeTyped() {
+  const q = $('#search-input').value.trim(); if (!q || !G) return;
+  try { const loc = await geocode(q); finishSearch(searchCtx, q, loc.lat, loc.lng); }
+  catch (e) { toast(e.message); }
 }
-function updateInvite() {
-  $('#invite-btn').hidden = !!S.session;
-  $('#plan-lede').hidden = !!S.session;
-  $('#add-label').textContent = S.session ? 'Add someone who isn\u2019t on the link' : 'Add someone yourself';
+function finishSearch(ctx, address, lat, lng) {
+  if (!ctx) return;
+  const name = $('#search-name').value.trim();
+  closeSearch();
+  if (ctx.forSelf) { setMyStart(address, lat, lng); return; }
+  if (ctx.person) {
+    Object.assign(ctx.person, { name, address, lat, lng }); commit(ctx.person); route(); return;
+  }
+  addManual(name, address, lat, lng);
 }
 
-// live preview of the best spots on the plan screen
-function renderLive() {
-  const st = $('#live-status'), mini = $('#mini');
-  const n = readyPeople().length;
-  const fresh = S.results && S.results.sig === signature();
-  st.classList.remove('busy', 'err');
-  if (n < 2) {
-    st.textContent = S.session
-      ? 'Spots appear here as soon as a second person adds where they\u2019re coming from.'
-      : 'Spots appear here once there are two starting points.';
-    mini.innerHTML = ''; return;
-  }
-  if (S.autoError && !fresh) { st.textContent = S.autoError; st.classList.add('err'); }
-  else if (!fresh) { st.textContent = S.results ? 'Updating for the latest changes\u2026' : 'Finding fair spots\u2026'; st.classList.add('busy'); }
-  else {
-    const by = S.results.byClient && S.results.byClient !== CLIENT_ID && S.results.by ? ` Found by ${S.results.by}.` : '';
-    st.textContent = `Ranked for ${S.results.people.length} people, ${({ DRIVING: 'by car', TRANSIT: 'by public transit', WALKING: 'on foot', BICYCLING: 'by bike' })[S.results.mode]}.${by}`;
-  }
-  mini.classList.toggle('dim', !fresh);
-  if (!S.results) { mini.innerHTML = ''; return; }
-  mini.innerHTML = S.results.spots.slice(0, 3).map((sp, i) => {
-    const vals = Object.values(sp.times);
-    const spread = Math.round((Math.max(...vals) - Math.min(...vals)) / 60);
-    const even = spread <= 2 ? 'Almost exactly even.' : `Everyone within ${spread} min.`;
-    return `<li><button type="button" data-id="${esc(sp.id)}"><span class="rank">${i + 1}</span><span><span class="mini-name">${esc(sp.name)}</span><span class="mini-sub">${even} Longest trip ${mins(Math.max(...vals))} min.</span></span></button></li>`;
+// ───────────────────────── waiting card ─────────────────────────
+function peopleHTML(opts = {}) {
+  const list = [...S.people].sort((a, b) => (isSelf(b) - isSelf(a)) || a.slot - b.slot);
+  let html = list.map(p => {
+    const placed = hasLoc(p) && p.address;
+    const label = displayName(p);
+    return `<button type="button" class="person${isSelf(p) ? ' me' : ''}" data-key="${esc(p.key)}" title="${esc(placed ? p.address : 'Hasn’t added a starting point yet')}">
+      <span class="avatar${placed ? '' : ' wait'}" style="--c:${COLORS[p.slot % COLORS.length]}">${esc(isSelf(p) ? initial(myName() || 'You') : initial(p.name || '?'))}</span>
+      <span>${esc(label)}</span></button>`;
   }).join('');
+  if (opts.waiting && readyPeople().length < 2) html += `<div class="person"><span class="avatar wait">?</span><span>Waiting</span></div>`;
+  if (S.people.length < MAX_PEOPLE) html += `<button type="button" class="person" data-add="1"><span class="avatar add">+</span><span>Add</span></button>`;
+  return html;
 }
-$('#mini').addEventListener('click', e => {
-  const b = e.target.closest('[data-id]'); if (!b) return;
-  showResults();
-  const li = document.querySelector(`.card[data-id="${CSS.escape(b.dataset.id)}"]`);
-  if (li) { toggleCard(li, true); li.scrollIntoView({ block: 'center' }); }
+function onPeopleClick(e) {
+  const add = e.target.closest('[data-add]'); if (add) { openSearch({}); return; }
+  const b = e.target.closest('[data-key]'); if (!b) return;
+  const p = S.people.find(x => x.key === b.dataset.key); if (!p) return;
+  if (isSelf(p)) openSearch({ forSelf: true, person: p });
+  else if (isMine(p)) openSearch({ person: p });
+  else toast(p.address ? `${p.name || 'They'}: ${shortPlace(p.address)}` : `${p.name || 'They'} hasn’t added a starting point yet.`);
+}
+$('#people-wait').addEventListener('click', onPeopleClick);
+$('#people-res').addEventListener('click', onPeopleClick);
+
+function renderWait() {
+  $('#people-wait').innerHTML = peopleHTML({ waiting: true });
+  const others = S.people.filter(p => !isSelf(p));
+  const joined = others.filter(p => !isMine(p));
+  if (!joined.length) {
+    $('#wait-title').textContent = 'Send this to whoever you’re meeting';
+    $('#wait-sub').textContent = 'When they add where they’re coming from, fair spots appear here.';
+  } else {
+    const n = joined.map(p => p.name).filter(Boolean);
+    $('#wait-title').textContent = n.length ? `${n.join(' and ')} joined` : 'Someone joined';
+    $('#wait-sub').textContent = 'Waiting for them to add where they’re coming from.';
+  }
+  $('#myname-row').hidden = !!myName();
+  $('#share-label').textContent = joined.length ? 'Send the link to someone else' : 'Send the link';
+  $('#float-label').textContent = S.session ? `Group ${S.session.code}` : 'midcamino';
+}
+$('#myname').addEventListener('change', e => {
+  const v = e.target.value.trim(); if (!v) return;
+  store.set('name', v);
+  const m = me(); if (m) { m.name = v; commit(m); }
+  route();
 });
 
-// ── automatic recompute ──
-// Whoever made the change computes straight away; everyone else waits a little
-// (longer for higher slots) and skips if a fresh result arrives in the meantime.
-let autoTimer = null;
-function scheduleAuto(mine) {
-  updateCTA();
-  if (readyPeople().length < 2) { clearTimeout(autoTimer); return; }
-  if (S.results && S.results.sig === signature()) { clearTimeout(autoTimer); return; }
-  if (S.failedSig === signature()) return;   // don't hammer Google with a search that just failed
-  clearTimeout(autoTimer);
-  const delay = mine || !S.session ? 600 : 3000 + S.mySlot * 1500;
-  autoTimer = setTimeout(autoRun, delay);
+// ───────────────────────── sharing ─────────────────────────
+function linkFor(code) { return `${location.origin}${location.pathname}?g=${code}`; }
+function inviteText() {
+  const who = myName();
+  return who ? `${who} wants to find somewhere fair to meet. Add where you’re coming from:` : 'Where shall we meet? Add where you’re coming from:';
 }
-async function autoRun() {
-  if (S.computing) { S.rerun = true; return; }
-  if (!G) { autoTimer = setTimeout(autoRun, 800); return; }
-  if (readyPeople().length < 2 || (S.results && S.results.sig === signature())) return;
-  await findSpots();
-  if (S.rerun) { S.rerun = false; scheduleAuto(true); }
+async function share(text, url) {
+  if (navigator.share) {
+    try { await navigator.share({ title: 'Midcamino', text, url }); return true; }
+    catch (e) { if (e && e.name === 'AbortError') return false; }
+  }
+  return copy(url ? `${text}\n${url}` : text);
 }
+async function copy(text) {
+  try { await navigator.clipboard.writeText(text); toast('Link copied. Paste it into your chat.'); return true; }
+  catch { toast(text); return false; }
+}
+function onShare() {
+  // keep navigator.share inside the tap so iPhones allow it
+  if (S.session) { share(inviteText(), linkFor(S.session.code)); return; }
+  if (!supa) { toast('Group links can’t connect right now. Check your connection and reload.'); return; }
+  const code = pendingCode || (pendingCode = genCode());
+  share(inviteText(), linkFor(code));
+  ensureSession();
+}
+$('#share-btn').addEventListener('click', onShare);
+$('#share-btn-2').addEventListener('click', onShare);
+$('#copy-btn').addEventListener('click', () => {
+  if (S.session) copy(linkFor(S.session.code));
+  else { const code = pendingCode || (pendingCode = genCode()); copy(linkFor(code)); ensureSession(); }
+});
+$('#add-manual').addEventListener('click', () => openSearch({}));
+$('#restart').addEventListener('click', startOver);
 
 // ───────────────────────── Google ─────────────────────────
 window.gInit = function () {
@@ -719,31 +699,26 @@ window.gInit = function () {
     dm: new google.maps.DistanceMatrixService(),
     places: new google.maps.places.PlacesService(document.createElement('div')),
   };
-  document.querySelectorAll('input[data-ac-pending]').forEach(inp => inp._acAttach && inp._acAttach());
-  resolvePending();
+  if ($('#search').classList.contains('on')) predict();
+  if ($('#main').classList.contains('on')) { ensureMap(); drawMap(); }
+  scheduleAuto(false);
 };
 window.gm_authFailure = function () { toast('Google Maps refused this site’s key. Check the API key restrictions.'); };
 
-function attachAutocomplete(input, onPlace) {
-  const go = () => {
-    if (input._ac) return;
-    input.removeAttribute('data-ac-pending');
-    const ac = new google.maps.places.Autocomplete(input, { fields: ['geometry', 'name', 'formatted_address'] });
-    ac.addListener('place_changed', () => onPlace(ac.getPlace()));
-    input._ac = ac;
-  };
-  if (G) go(); else { input.setAttribute('data-ac-pending', ''); input._acAttach = go; }
-}
 function geocode(address) {
   return new Promise((res, rej) => G.geocoder.geocode({ address }, (r, s) => s === 'OK' && r[0]
     ? res({ lat: r[0].geometry.location.lat(), lng: r[0].geometry.location.lng() })
-    : rej(new Error(`We couldn’t find “${address}”. Try a fuller address or pick a suggestion.`))));
+    : rej(new Error(`Couldn’t find “${address}”. Try a fuller address or pick a suggestion.`))));
+}
+function geocodePlaceId(placeId) {
+  return new Promise((res, rej) => G.geocoder.geocode({ placeId }, (r, s) => s === 'OK' && r[0]
+    ? res({ lat: r[0].geometry.location.lat(), lng: r[0].geometry.location.lng() }) : rej(new Error(s))));
 }
 function reverseGeocode(lat, lng) {
   return new Promise((res, rej) => G.geocoder.geocode({ location: { lat, lng } }, (r, s) => {
     if (s !== 'OK' || !r[0]) return rej();
-    const street = r.find(x => x.types.includes('street_address') || x.types.includes('premise')) || r[0];
-    res(street.formatted_address.replace(/, (USA|United States|Ireland|UK|United Kingdom)$/, ''));
+    const hood = r.find(x => x.types.includes('neighborhood')) || r.find(x => x.types.includes('sublocality')) || r[0];
+    res(hood.formatted_address.replace(/, (USA|United States|Ireland|UK|United Kingdom)$/, ''));
   }));
 }
 function nearby(loc, type) {
@@ -764,32 +739,7 @@ function placeDetails(placeId) {
   }, (p, s) => s === 'OK' ? res(p) : rej(s)));
 }
 
-// ───────────────────────── the search ─────────────────────────
-async function findSpots() {
-  const ready = readyPeople();
-  if (!G || ready.length < 2) return;
-  const sig = signature();
-  S.computing = true; S.autoError = null; updateCTA();
-  try {
-    const spots = await computeSpots(ready.map(p => ({ slot: p.slot, lat: p.lat, lng: p.lng })), S.mode, S.types);
-    if (signature() !== sig) { S.rerun = true; return; }   // things changed while we were working
-    S.results = {
-      at: Date.now(), by: S.session ? (myName() || 'Someone') : '', byClient: CLIENT_ID,
-      sig, mode: S.mode,
-      people: ready.map(p => ({ slot: p.slot, name: isSelf(p) ? (myName() || '') : p.name })),
-      spots,
-    };
-    pushState({ results: S.results });
-    if ($('#results').classList.contains('is-active')) { renderResults(); drawMap(); }
-  } catch (err) {
-    S.autoError = err && err.message ? err.message : 'Something went wrong finding spots.';
-    S.failedSig = sig;
-    console.error(err);
-  } finally {
-    S.computing = false; updateCTA();
-  }
-}
-
+// ───────────────────────── the search for spots ─────────────────────────
 async function computeSpots(locs, mode, types) {
   const c = { lat: locs.reduce((s, l) => s + l.lat, 0) / locs.length, lng: locs.reduce((s, l) => s + l.lng, 0) / locs.length };
   const points = [c, ...locs.map(l => ({ lat: (l.lat + c.lat) / 2, lng: (l.lng + c.lng) / 2 }))];
@@ -802,10 +752,7 @@ async function computeSpots(locs, mode, types) {
     seen.add(p.place_id);
     if (p.business_status && p.business_status !== 'OPERATIONAL') continue;
     if (isChain(p.name)) continue;
-    if (filterFood) {
-      const t = p.types || [];
-      if (t.includes('meal_takeaway') || t.includes('meal_delivery')) continue;
-    }
+    if (filterFood) { const t = p.types || []; if (t.includes('meal_takeaway') || t.includes('meal_delivery')) continue; }
     const loc = { lat: p.geometry.location.lat(), lng: p.geometry.location.lng() };
     const d = locs.map(l => haversine(l, loc));
     cands.push({ p, loc, pre: Math.max(...d) + (Math.max(...d) - Math.min(...d)) * 0.5 });
@@ -813,19 +760,16 @@ async function computeSpots(locs, mode, types) {
   if (!cands.length) throw new Error('Nothing like that turned up between you. Try another kind of place.');
   cands.sort((a, b) => a.pre - b.pre);
   cands = cands.slice(0, 45);
-
   const per = Math.max(1, Math.min(25, Math.floor(100 / locs.length)));
   const chunks = [];
   for (let i = 0; i < cands.length; i += per) chunks.push(cands.slice(i, i + per));
   const origins = locs.map(l => ({ lat: l.lat, lng: l.lng }));
   const resps = await Promise.all(chunks.map(ch => matrix(origins, ch.map(x => x.loc), mode)));
-
   const scored = [];
   chunks.forEach((ch, ci) => {
     const r = resps[ci]; if (!r) return;
     ch.forEach((cand, j) => {
-      const times = {};
-      let ok = true;
+      const times = {}; let ok = true;
       locs.forEach((l, i) => {
         const el = r.rows[i] && r.rows[i].elements[j];
         if (el && el.status === 'OK') times[l.slot] = el.duration.value; else ok = false;
@@ -838,11 +782,7 @@ async function computeSpots(locs, mode, types) {
   if (!scored.length) throw new Error(mode === 'TRANSIT'
     ? 'Google has no transit routes for these spots right now. Try driving or another kind of place.'
     : 'Google couldn’t time trips to any of these spots. Try another travel mode.');
-
-  scored.sort((a, b) => {
-    const ba = Math.floor(a.maxT / 600), bb = Math.floor(b.maxT / 600);
-    return ba - bb || a.spread - b.spread || a.total - b.total;
-  });
+  scored.sort((a, b) => (Math.floor(a.maxT / 600) - Math.floor(b.maxT / 600)) || a.spread - b.spread || a.total - b.total);
   return scored.slice(0, MAX_RESULTS).map(s => ({
     id: s.cand.p.place_id, name: s.cand.p.name, vicinity: s.cand.p.vicinity || '',
     lat: s.cand.loc.lat, lng: s.cand.loc.lng,
@@ -852,130 +792,186 @@ async function computeSpots(locs, mode, types) {
   }));
 }
 
-// ───────────────────────── results screen ─────────────────────────
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('is-active', s.id === id));
-  window.scrollTo(0, 0);
+async function findSpots() {
+  const ready = readyPeople();
+  if (!G || ready.length < 2) return;
+  const sig = signature();
+  S.computing = true; S.autoError = null; refreshStatus();
+  try {
+    const spots = await computeSpots(ready.map(p => ({ slot: p.slot, lat: p.lat, lng: p.lng })), S.mode, S.types);
+    if (signature() !== sig) { S.rerun = true; return; }
+    S.results = {
+      at: Date.now(), by: S.session ? (myName() || 'Someone') : '', byClient: CLIENT_ID, sig, mode: S.mode,
+      people: ready.map(p => ({ slot: p.slot, name: isSelf(p) ? myName() : p.name })), spots,
+    };
+    pushState({ results: S.results });
+  } catch (err) {
+    S.autoError = err && err.message ? err.message : 'Something went wrong finding spots.';
+    S.failedSig = sig; console.error(err);
+  } finally {
+    S.computing = false; route();
+  }
 }
-function showResults() {
-  if (!S.results) return;
-  showScreen('results');
-  renderResults();
-  ensureMap();
-  drawMap();
-}
-$('#back-btn').addEventListener('click', () => { showScreen('plan'); refreshBanners(); });
 
-function resultPeople() {
-  return S.results.people.map(rp => ({ slot: rp.slot, name: nameOf(rp.slot, rp.name) }));
+// Whoever made the change computes straight away; everyone else waits a little
+// (longer for higher slots) and skips if a fresh result arrives in the meantime.
+let autoTimer = null;
+function scheduleAuto(mine) {
+  if (S.failedSig && S.failedSig !== signature()) { S.failedSig = null; S.autoError = null; }
+  refreshStatus();
+  if (readyPeople().length < 2) { clearTimeout(autoTimer); return; }
+  if (S.results && S.results.sig === signature()) { clearTimeout(autoTimer); return; }
+  if (S.failedSig === signature()) return;
+  clearTimeout(autoTimer);
+  autoTimer = setTimeout(autoRun, mine || !S.session ? 500 : 3000 + S.mySlot * 1500);
+}
+async function autoRun() {
+  if (S.computing) { S.rerun = true; return; }
+  if (!G) { autoTimer = setTimeout(autoRun, 800); return; }
+  if (readyPeople().length < 2 || (S.results && S.results.sig === signature())) return;
+  await findSpots();
+  if (S.rerun) { S.rerun = false; scheduleAuto(true); }
 }
 
-function renderResults() {
+// ───────────────────────── results card ─────────────────────────
+function renderModes() {
+  $('#modes').innerHTML = Object.entries(MODES).map(([k, m]) =>
+    `<button type="button" role="radio" aria-checked="${S.mode === k}" data-mode="${k}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${m.icon}</svg>${m.label}</button>`).join('');
+}
+function renderTypes() {
+  $('#types').innerHTML = TYPES.map(([k, l]) => `<button type="button" class="chip" aria-pressed="${S.types.includes(k)}" data-type="${k}">${l}</button>`).join('');
+}
+function renderFilterChips() {
+  const m = MODES[S.mode];
+  $('#mode-chip').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${m.icon}</svg>${m.label}${ICON.down.replace('<svg', '<svg width="14" height="14"')}`;
+  const names = TYPES.filter(([k]) => S.types.includes(k)).map(([, l]) => l);
+  $('#type-chip').innerHTML = `${esc(names.length > 2 ? names.slice(0, 2).join(', ') + ' +' + (names.length - 2) : names.join(', '))}${ICON.down.replace('<svg', '<svg width="14" height="14"')}`;
+}
+function openFilters() { renderModes(); renderTypes(); $('#filters-modal').hidden = false; }
+$('#mode-chip').addEventListener('click', openFilters);
+$('#type-chip').addEventListener('click', openFilters);
+$('#modes').addEventListener('click', e => {
+  const b = e.target.closest('[data-mode]'); if (!b) return;
+  S.mode = b.dataset.mode; store.set('mode', S.mode); renderModes(); renderFilterChips(); pushState({ mode: S.mode }); scheduleAuto(true);
+});
+$('#types').addEventListener('click', e => {
+  const b = e.target.closest('[data-type]'); if (!b) return;
+  const t = b.dataset.type;
+  if (S.types.includes(t)) { if (S.types.length > 1) S.types = S.types.filter(x => x !== t); } else S.types = [...S.types, t];
+  store.set('types', S.types); renderTypes(); renderFilterChips(); pushState({ types: S.types }); scheduleAuto(true);
+});
+
+function refreshStatus() {
+  const st = $('#status'); if (!st) return;
+  const fresh = S.results && S.results.sig === signature();
+  st.classList.remove('busy', 'err');
+  if (S.autoError && !fresh) { st.textContent = S.autoError; st.classList.add('err'); }
+  else if (!fresh && readyPeople().length >= 2) { st.textContent = S.results ? 'Updating for the latest changes…' : 'Finding fair spots…'; st.classList.add('busy'); }
+  else if (S.results) {
+    const by = S.results.byClient && S.results.byClient !== CLIENT_ID && S.results.by ? ` Found by ${S.results.by}.` : '';
+    st.textContent = `Ranked ${MODES[S.results.mode].how}.${by}`;
+  } else st.textContent = '';
+  $('#list').style.opacity = fresh || !S.results ? '' : '.5';
+}
+
+let listKey = '';
+function renderResultsPane() {
+  renderFilterChips();
+  $('#people-res').innerHTML = peopleHTML();
+  $('#float-label').textContent = S.session ? `Group ${S.session.code}` : 'midcamino';
+  refreshStatus();
+  refreshChosen();
   const R = S.results;
-  const people = resultPeople();
-  const n = R.spots.length;
-  $('#res-title').textContent = n === 1 ? '1 fair spot' : `${n} fair spots`;
-  const by = R.byClient && R.byClient !== CLIENT_ID && R.by ? ` Found by ${R.by}.` : '';
-  const how = { DRIVING: 'By car', TRANSIT: 'By public transit', WALKING: 'On foot', BICYCLING: 'By bike' }[R.mode] || 'By car';
-  $('#res-sub').textContent = `${how}, for ${people.length} people.${by}`;
-  $('#legend').innerHTML = people.map(p => `<span style="--c:${COLORS[p.slot % COLORS.length]}"><i></i>${esc(p.name)}</span>`).join('');
-  $('#stale').hidden = !(R.sig && R.sig !== signature() && readyPeople().length >= 2);
-  if (S.autoError && R.sig !== signature()) { $('#stale-title').textContent = 'Couldn\u2019t update these spots'; $('#stale-sub').textContent = S.autoError; }
-  else { $('#stale-title').textContent = 'Updating for the latest changes'; $('#stale-sub').textContent = 'These spots will refresh in a moment.'; }
-
+  if (!R) { $('#res-title').textContent = 'Finding spots'; $('#list').innerHTML = ''; listKey = ''; return; }
+  const people = R.people.map(rp => ({ slot: rp.slot, name: nameOfSlot(rp.slot, rp.name) }));
+  const key = R.at + '|' + (S.chosen ? S.chosen.id : '') + '|' + people.map(p => p.name).join(',') + '|' + !!S.session;
+  if (key === listKey) return;
+  listKey = key;
+  $('#res-title').textContent = R.spots.length === 1 ? '1 fair spot' : `${R.spots.length} fair spots`;
+  const openId = (document.querySelector('.spot.is-open') || {}).dataset?.id;
   const maxAll = Math.max(...R.spots.flatMap(s => Object.values(s.times)));
   const scaleMax = Math.max(10, Math.ceil(maxAll / 600) * 10);
-
+  const pct = v => (v / 60 / scaleMax * 100).toFixed(2);
   $('#list').innerHTML = R.spots.map((s, i) => {
     const vals = people.map(p => s.times[p.slot]).filter(v => v != null);
     const lo = Math.min(...vals), hi = Math.max(...vals);
     const spreadMin = Math.round((hi - lo) / 60);
-    const verdict = spreadMin <= 2 ? '<b>Almost exactly even.</b>' : `<b>Everyone within ${spreadMin} min</b> of each other.`;
-    const pct = v => (v / 60 / scaleMax * 100).toFixed(2);
-    const pins = people.filter(p => s.times[p.slot] != null)
-      .map(p => `<span class="pin" style="left:${pct(s.times[p.slot])}%;--c:${COLORS[p.slot % COLORS.length]}" title="${esc(p.name)}: ${mins(s.times[p.slot])} min"></span>`).join('');
-    const meta = [s.type, s.rating ? `${s.rating.toFixed(1)}★ (${s.count.toLocaleString()})` : '', s.price != null && s.price > 0 ? '$'.repeat(s.price) : '', s.vicinity]
+    const verdict = spreadMin <= 2 ? '<b>Almost exactly even.</b>' : `<b>Everyone within ${spreadMin} min.</b>`;
+    const pins = people.filter(p => s.times[p.slot] != null).map(p => `<span class="pin" style="left:${pct(s.times[p.slot])}%;--c:${COLORS[p.slot % COLORS.length]}"></span>`).join('');
+    const meta = [s.type, s.rating ? `${s.rating.toFixed(1)}★ (${s.count.toLocaleString()})` : '', s.price > 0 ? '$'.repeat(s.price) : '', s.vicinity]
       .filter(Boolean).map(x => `<span>${esc(x)}</span>`).join('');
     const chosen = S.chosen && S.chosen.id === s.id;
-    return `<li class="card${chosen ? ' is-chosen' : ''}" data-id="${esc(s.id)}">
-      <button class="card-main" type="button" aria-expanded="false">
+    return `<li class="spot${chosen ? ' is-chosen' : ''}" data-id="${esc(s.id)}">
+      <button class="spot-main" type="button" aria-expanded="false">
         <span class="rank">${i + 1}</span>
-        <span class="card-body">
-          <span class="card-name">${esc(s.name)}${i === 0 ? '<span class="badge">Best balance</span>' : ''}${chosen ? '<span class="badge" style="background:var(--sun-soft);color:var(--ink)">Picked</span>' : ''}</span>
-          <span class="card-meta">${meta}</span>
-          <span class="fair" style="display:block">
-            <span class="track" style="display:block" aria-hidden="true">
-              <span class="spread" style="left:${pct(lo)}%;width:${(pct(hi) - pct(lo)).toFixed(2)}%"></span>${pins}
-            </span>
-            <span class="scale" aria-hidden="true"><span>0</span><span>${scaleMax / 2} min</span><span>${scaleMax} min</span></span>
-          </span>
-          <span class="verdict" style="display:block">${verdict} Longest trip ${mins(hi)} min.</span>
+        <span class="spot-body">
+          <span class="spot-name">${esc(s.name)}${i === 0 ? '<span class="badge">Best balance</span>' : ''}${chosen ? '<span class="badge" style="background:var(--sun-soft);color:var(--ink)">Picked</span>' : ''}</span>
+          <span class="spot-meta">${meta}</span>
+          <span class="fair"><span class="track" aria-hidden="true"><span class="spread" style="left:${pct(lo)}%;width:${(pct(hi) - pct(lo)).toFixed(2)}%"></span>${pins}</span></span>
+          <span class="verdict">${verdict} Longest trip ${mins(hi)} min.</span>
           <span class="times">${people.filter(p => s.times[p.slot] != null).map(p => `<span style="--c:${COLORS[p.slot % COLORS.length]}"><i></i>${esc(p.name)} <b>${mins(s.times[p.slot])} min</b></span>`).join('')}</span>
         </span>
       </button>
       <div class="more" hidden></div>
     </li>`;
   }).join('');
-  refreshChosenBanners();
+  if (openId) { const li = document.querySelector(`.spot[data-id="${CSS.escape(openId)}"]`); if (li) toggleSpot(li, true, true); }
 }
 
 $('#list').addEventListener('click', e => {
-  const btn = e.target.closest('.card-main'); if (!btn) return;
-  const li = btn.closest('.card');
-  toggleCard(li, !li.classList.contains('is-open'));
+  const btn = e.target.closest('.spot-main'); if (!btn) return;
+  const li = btn.closest('.spot');
+  toggleSpot(li, !li.classList.contains('is-open'));
 });
-
-function toggleCard(li, open) {
-  document.querySelectorAll('.card.is-open').forEach(x => { if (x !== li) { x.classList.remove('is-open'); x.querySelector('.more').hidden = true; x.querySelector('.card-main').setAttribute('aria-expanded', 'false'); } });
+function toggleSpot(li, open, quiet) {
+  document.querySelectorAll('.spot.is-open').forEach(x => { if (x !== li) { x.classList.remove('is-open'); x.querySelector('.more').hidden = true; x.querySelector('.spot-main').setAttribute('aria-expanded', 'false'); } });
   li.classList.toggle('is-open', open);
-  li.querySelector('.card-main').setAttribute('aria-expanded', String(open));
-  const more = li.querySelector('.more');
-  more.hidden = !open;
+  li.querySelector('.spot-main').setAttribute('aria-expanded', String(open));
+  const more = li.querySelector('.more'); more.hidden = !open;
   const spot = S.results.spots.find(s => s.id === li.dataset.id);
   highlightMarker(open ? spot.id : null);
   if (!open) return;
-  if (map) { map.panTo({ lat: spot.lat, lng: spot.lng }); if (map.getZoom() < 14) map.setZoom(14); }
-  if (!more.dataset.loaded) loadMore(more, spot);
-  else renderActions(more, spot);
+  if (!quiet) {
+    $('#card').classList.add('tall');
+    if (map) { map.panTo({ lat: spot.lat, lng: spot.lng }); if (map.getZoom() < 14) map.setZoom(14); }
+  }
+  if (!more.dataset.loaded) loadMore(more, spot); else renderActions(more, spot);
 }
-
 function directionsUrl(spot) {
-  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(spot.name)}&destination_place_id=${encodeURIComponent(spot.id)}&travelmode=${MODES[S.results.mode].dir}`;
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(spot.name)}&destination_place_id=${encodeURIComponent(spot.id)}&travelmode=${MODES[(S.results || {}).mode || S.mode].dir}`;
 }
-
+const detailsCache = new Map();
 function loadMore(el, spot) {
   el.dataset.loaded = '1';
+  const cached = detailsCache.get(spot.id);
+  if (cached) { renderMore(el, spot, cached); return; }
   el.innerHTML = '<div class="actions"></div>';
   renderActions(el, spot);
-  placeDetails(spot.id).then(d => {
-    spot._d = d;
-    let status = '';
-    try {
-      if (d.opening_hours && typeof d.opening_hours.isOpen === 'function') {
-        const open = d.opening_hours.isOpen();
-        if (open === true) status = '<div class="more-status" style="color:var(--ok)">Open now</div>';
-        else if (open === false) status = '<div class="more-status" style="color:var(--bad)">Closed right now</div>';
-      }
-    } catch {}
-    const photos = d.photos && d.photos.length
-      ? `<div class="photos">${d.photos.slice(0, 6).map(p => `<img src="${p.getUrl({ maxWidth: 400, maxHeight: 300 })}" alt="" loading="lazy" />`).join('')}</div>` : '';
-    const reviews = d.url ? `<a class="more-link" href="${esc(d.url)}" target="_blank" rel="noopener">Reviews and photos on Google Maps</a>` : '';
-    el.innerHTML = status + photos + '<div class="actions"></div>' + reviews;
-    renderActions(el, spot);
-  }).catch(() => {});
+  if (!G) return;
+  placeDetails(spot.id).then(d => { detailsCache.set(spot.id, d); renderMore(el, spot, d); }).catch(() => {});
 }
-
+function renderMore(el, spot, d) {
+  let status = '';
+  try {
+    if (d.opening_hours && typeof d.opening_hours.isOpen === 'function') {
+      const open = d.opening_hours.isOpen();
+      if (open === true) status = '<div class="more-status" style="color:var(--ok)">Open now</div>';
+      else if (open === false) status = '<div class="more-status" style="color:var(--bad)">Closed right now</div>';
+    }
+  } catch {}
+  const photos = d.photos && d.photos.length ? `<div class="photos">${d.photos.slice(0, 6).map(p => `<img src="${p.getUrl({ maxWidth: 400, maxHeight: 300 })}" alt="" loading="lazy" />`).join('')}</div>` : '';
+  const reviews = d.url ? `<a class="more-link" href="${esc(d.url)}" target="_blank" rel="noopener">Reviews and photos on Google Maps</a>` : '';
+  el.innerHTML = status + photos + '<div class="actions"></div>' + reviews;
+  renderActions(el, spot);
+}
 function renderActions(el, spot) {
   const box = el.querySelector('.actions'); if (!box) return;
-  const d = spot._d || {};
-  const bookingKeywords = ['resy.com', 'opentable.com', 'sevenrooms.com', 'tock.com', 'yelp.com/reservations', 'book', 'reserve'];
+  const d = detailsCache.get(spot.id) || {};
   const site = d.website || '';
-  const siteIsBooking = site && bookingKeywords.some(k => site.toLowerCase().includes(k));
+  const siteIsBooking = site && ['resy.com', 'opentable.com', 'sevenrooms.com', 'tock.com', 'yelp.com/reservations', 'book', 'reserve'].some(k => site.toLowerCase().includes(k));
   const chosen = S.chosen && S.chosen.id === spot.id;
   const parts = [`<a class="act primary" href="${directionsUrl(spot)}" target="_blank" rel="noopener">Directions</a>`];
-  if (S.session) parts.push(chosen
-    ? `<button class="act picked" type="button" data-act="unpick">Picked for the group</button>`
-    : `<button class="act pick" type="button" data-act="pick">Pick for the group</button>`);
+  if (S.session) parts.push(chosen ? `<button class="act picked" type="button" data-act="unpick">Picked for the group</button>` : `<button class="act pick" type="button" data-act="pick">Pick for the group</button>`);
   parts.push(`<button class="act" type="button" data-act="share">Share</button>`);
   if (d.reservable || siteIsBooking) parts.push(`<a class="act" href="${esc(siteIsBooking ? site : (d.url || directionsUrl(spot)))}" target="_blank" rel="noopener">Book a table</a>`);
   else if (site) parts.push(`<a class="act" href="${esc(site)}" target="_blank" rel="noopener">Website</a>`);
@@ -988,91 +984,101 @@ function renderActions(el, spot) {
     if (a.dataset.act === 'unpick') pickSpot(null);
   };
 }
-
-function spotSummary(spot) {
-  const times = resultPeople().filter(p => spot.times[p.slot] != null).map(p => `${p.name === 'You' ? (myName() || 'Me') : p.name} ${mins(spot.times[p.slot])} min`).join(', ');
-  return `${spot.name}${spot.vicinity ? ', ' + spot.vicinity : ''}\n${times}`;
-}
 function shareSpot(spot) {
-  const url = S.session ? sessionLink() : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(spot.name)}&query_place_id=${encodeURIComponent(spot.id)}`;
-  share(`How about ${spotSummary(spot)}`, url);
+  const times = S.results.people.filter(p => spot.times[p.slot] != null).map(p => {
+    const n = nameOfSlot(p.slot, p.name); return `${n === 'You' ? (myName() || 'Me') : n} ${mins(spot.times[p.slot])} min`;
+  }).join(', ');
+  const url = S.session ? linkFor(S.session.code) : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(spot.name)}&query_place_id=${encodeURIComponent(spot.id)}`;
+  share(`How about ${spot.name}${spot.vicinity ? ', ' + spot.vicinity : ''}? ${times}`, url);
 }
 async function pickSpot(spot) {
   S.chosen = spot ? { id: spot.id, name: spot.name, by: myName() || 'Someone', byClient: CLIENT_ID } : null;
-  renderResults(); drawMap();
+  route();
   if (spot) {
-    const li = document.querySelector(`.card[data-id="${CSS.escape(spot.id)}"]`);
-    if (li) toggleCard(li, true);
+    const li = document.querySelector(`.spot[data-id="${CSS.escape(spot.id)}"]`);
+    if (li) toggleSpot(li, true);
     toast(`Picked ${spot.name}. Everyone in the group can see it.`);
   }
   await pushState({ chosen: S.chosen });
 }
-
-function chosenHTML() {
-  const c = S.chosen;
+function refreshChosen() {
+  const el = $('#chosen'), c = S.chosen;
+  if (!c) { el.hidden = true; return; }
   const spot = S.results && S.results.spots.find(s => s.id === c.id);
-  const who = c.byClient === CLIENT_ID ? 'You picked it.' : `${esc(c.by)} picked it.`;
-  return `<div class="grow"><strong>Meeting at ${esc(c.name)}</strong><p>${who}</p></div>` +
-    (spot ? `<a class="small-btn" href="${directionsUrl(spot)}" target="_blank" rel="noopener" style="text-decoration:none">Directions</a>` : '');
+  el.innerHTML = `<div class="grow"><strong>Meeting at ${esc(c.name)}</strong><p>${c.byClient === CLIENT_ID ? 'You picked it.' : esc(c.by) + ' picked it.'}</p></div>` +
+    (spot ? `<a class="small-btn" href="${directionsUrl(spot)}" target="_blank" rel="noopener">Directions</a>` : '');
+  el.hidden = false;
 }
-function refreshChosenBanners() {
-  ['#chosen-plan', '#chosen-res'].forEach(id => {
-    const el = $(id);
-    if (S.chosen) { el.innerHTML = chosenHTML(); el.hidden = false; } else el.hidden = true;
-  });
-}
+
+// card handle: tap or swipe to expand/collapse
+(() => {
+  const card = $('#card'); let y0 = null;
+  $('#handle').addEventListener('click', () => card.classList.toggle('tall'));
+  card.addEventListener('touchstart', e => { y0 = e.touches[0].clientY; }, { passive: true });
+  card.addEventListener('touchend', e => {
+    if (y0 == null || card.classList.contains('wait-mode')) return;
+    const dy = e.changedTouches[0].clientY - y0; y0 = null;
+    if (dy < -40 && card.scrollTop <= 0) card.classList.add('tall');
+    else if (dy > 60 && card.scrollTop <= 0) card.classList.remove('tall');
+  }, { passive: true });
+})();
 
 // ───────────────────────── map ─────────────────────────
 const MAP_STYLE = [
   { featureType: 'poi', stylers: [{ visibility: 'off' }] },
   { featureType: 'poi.park', stylers: [{ visibility: 'simplified' }] },
-  { featureType: 'transit.station', stylers: [{ visibility: 'simplified' }] },
+  { featureType: 'transit.station', stylers: [{ visibility: 'off' }] },
   { featureType: 'road', elementType: 'labels.icon', stylers: [{ visibility: 'off' }] },
-  { elementType: 'geometry', stylers: [{ saturation: -60 }] },
+  { elementType: 'geometry', stylers: [{ saturation: -70 }] },
   { featureType: 'water', stylers: [{ color: '#cfe0e3' }] },
 ];
 function ensureMap() {
   if (map || !G) return;
-  map = new google.maps.Map($('#map'), { center: { lat: 40.75, lng: -73.9 }, zoom: 12, disableDefaultUI: true, zoomControl: true, gestureHandling: 'greedy', clickableIcons: false, styles: MAP_STYLE });
+  map = new google.maps.Map($('#map'), { center: { lat: 40.75, lng: -73.9 }, zoom: 12, disableDefaultUI: true, gestureHandling: 'greedy', clickableIcons: false, styles: MAP_STYLE });
 }
 function svgIcon(svg, w, h, ax, ay) {
   return { url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg), scaledSize: new google.maps.Size(w, h), anchor: new google.maps.Point(ax, ay) };
 }
 function personIcon(slot, letter) {
   const c = COLORS[slot % COLORS.length];
-  return svgIcon(`<svg xmlns="http://www.w3.org/2000/svg" width="34" height="34"><circle cx="17" cy="17" r="14" fill="${c}" stroke="#fff" stroke-width="3"/><text x="17" y="22" font-family="Arial, sans-serif" font-size="14" font-weight="700" fill="#fff" text-anchor="middle">${esc(letter)}</text></svg>`, 34, 34, 17, 17);
+  return svgIcon(`<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><circle cx="20" cy="20" r="16" fill="${c}" stroke="#fff" stroke-width="4"/><text x="20" y="25.5" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#fff" text-anchor="middle">${esc(letter)}</text></svg>`, 40, 40, 20, 20);
 }
 function placeIcon(n, state) {
-  const fill = state === 'chosen' ? '#FFD000' : state === 'open' ? '#FFD000' : '#26160f';
-  const txt = state ? '#26160f' : '#fff';
-  const s = state ? 1.2 : 1;
+  const fill = state ? '#FFD000' : '#26160f', txt = state ? '#26160f' : '#fff', s = state ? 1.2 : 1;
   const w = Math.round(30 * s), h = Math.round(38 * s);
   return svgIcon(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 30 38"><path d="M15 37C15 37 2 23.5 2 14.5A13 13 0 0 1 28 14.5C28 23.5 15 37 15 37Z" fill="${fill}" stroke="#fff" stroke-width="2"/><text x="15" y="19.5" font-family="Arial, sans-serif" font-size="13" font-weight="700" fill="${txt}" text-anchor="middle">${n}</text></svg>`, w, h, w / 2, h);
 }
+let lastFitKey = '';
 function drawMap() {
-  if (!map || !S.results) return;
+  if (!map) return;
   mapMarkers.forEach(m => m.setMap(null)); mapMarkers = []; placeMarkers.clear();
   const bounds = new google.maps.LatLngBounds();
-  const people = resultPeople();
-  people.forEach(rp => {
-    const p = S.people.find(x => x.slot === rp.slot);
-    if (!p || !hasLoc(p)) return;
-    const letter = (rp.name === 'You' ? (myName() || 'Y') : rp.name)[0].toUpperCase();
-    const m = new google.maps.Marker({ position: { lat: p.lat, lng: p.lng }, map, icon: personIcon(rp.slot, letter), title: rp.name, zIndex: 5 });
-    mapMarkers.push(m); bounds.extend(m.getPosition());
+  let count = 0;
+  readyPeople().forEach(p => {
+    const letter = isSelf(p) ? initial(myName() || 'You') : initial(p.name || '?');
+    const m = new google.maps.Marker({ position: { lat: p.lat, lng: p.lng }, map, icon: personIcon(p.slot, letter), title: displayName(p), zIndex: 5 });
+    mapMarkers.push(m); bounds.extend(m.getPosition()); count++;
   });
-  S.results.spots.forEach((s, i) => {
+  const showSpots = S.results && readyPeople().length >= 2;
+  if (showSpots) S.results.spots.forEach((s, i) => {
     const chosen = S.chosen && S.chosen.id === s.id;
     const m = new google.maps.Marker({ position: { lat: s.lat, lng: s.lng }, map, icon: placeIcon(i + 1, chosen ? 'chosen' : ''), title: s.name, zIndex: chosen ? 50 : 10 + (MAX_RESULTS - i) });
     m._n = i + 1; m._chosen = chosen;
     m.addListener('click', () => {
-      const li = document.querySelector(`.card[data-id="${CSS.escape(s.id)}"]`);
-      if (li) { toggleCard(li, true); li.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+      const li = document.querySelector(`.spot[data-id="${CSS.escape(s.id)}"]`);
+      if (li) { toggleSpot(li, true); li.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
     });
-    placeMarkers.set(s.id, m); mapMarkers.push(m); bounds.extend(m.getPosition());
+    placeMarkers.set(s.id, m); mapMarkers.push(m); bounds.extend(m.getPosition()); count++;
   });
-  const narrow = window.innerWidth < 900;
-  map.fitBounds(bounds, narrow ? { top: 60, bottom: 40, left: 30, right: 30 } : 60);
+  // only re-frame the map when what's on it changes, not on every redraw
+  const fitKey = signature() + (showSpots ? S.results.at : '');
+  if (fitKey === lastFitKey || !count) return;
+  lastFitKey = fitKey;
+  const desktop = window.innerWidth >= 900;
+  const cardH = $('#card').getBoundingClientRect().height;
+  const pad = desktop ? { top: 60, bottom: 60, left: 470, right: 60 } : { top: 70, bottom: Math.min(cardH, window.innerHeight * .6) + 20, left: 40, right: 40 };
+  if (count === 1) { map.setCenter(bounds.getCenter()); map.setZoom(14); map.panBy(0, desktop ? 0 : Math.round(cardH / 2)); }
+  else map.fitBounds(bounds, pad);
 }
 function highlightMarker(id) {
   placeMarkers.forEach((m, sid) => {
@@ -1082,56 +1088,24 @@ function highlightMarker(id) {
   });
 }
 
-// ───────────────────────── sharing ─────────────────────────
-function sessionLink() { return `${location.origin}${location.pathname}?g=${S.session.code}`; }
-async function share(text, url) {
-  if (navigator.share) {
-    try { await navigator.share({ title: 'Midcamino', text, url }); return true; }
-    catch (e) { if (e && e.name === 'AbortError') return false; }
-  }
-  try { await navigator.clipboard.writeText(url ? `${text}\n${url}` : text); toast('Copied. Paste it into your group chat.'); return true; }
-  catch { toast(url || text); return false; }
-}
-function linkFor(code) { return `${location.origin}${location.pathname}?g=${code}`; }
-function inviteText() {
-  const who = myName();
-  return who
-    ? `${who} wants to find somewhere fair to meet. Add where you\u2019re coming from:`
-    : 'Where shall we meet? Add where you\u2019re coming from and Midcamino finds the fairest spot:';
-}
-function shareInvite() { return share(inviteText(), sessionLink()); }
-$('#share-link-btn').addEventListener('click', shareInvite);
-
 // ───────────────────────── group sessions ─────────────────────────
+let pendingCode = null, creating = null;
 function genCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   const a = new Uint32Array(6); crypto.getRandomValues(a);
   return [...a].map(x => chars[x % chars.length]).join('');
 }
-function needSupa() {
-  if (supa) return true;
-  toast('Group plans can’t connect right now. Check your connection and reload.');
-  return false;
+// Create the group as soon as I'm placed, so the link is ready before anyone taps Send.
+function ensureSession() {
+  if (S.session || creating || !supa) return creating;
+  const code = pendingCode || (pendingCode = genCode());
+  creating = createSession(code).then(c => {
+    if (c !== code) toast('Your link changed. Send it again.');
+    return c;
+  }).catch(err => { console.error(err); toast('Couldn’t create the group link. Check your connection.'); })
+    .finally(() => { creating = null; pendingCode = null; });
+  return creating;
 }
-
-// One tap: the share sheet opens straight away (it has to, to keep the tap's
-// permission on iPhone) while the group is created in the background.
-$('#invite-btn').addEventListener('click', () => {
-  if (!needSupa()) return;
-  const code = genCode();
-  const creating = createSession(code);
-  const sharing = share(inviteText(), linkFor(code));
-  Promise.all([creating, sharing]).then(([finalCode, shared]) => {
-    if (finalCode !== code) { toast('Your link changed. Tap Share link to send the new one.'); return; }
-    const me = S.people.find(isSelf);
-    if (shared && me && !me.address) {
-      toast('Link ready. Now add where you\u2019re coming from.');
-      const li = document.querySelector(`[data-key="${CSS.escape(me.key)}"]`);
-      if (li) li.scrollIntoView({ block: 'center', behavior: 'smooth' });
-    }
-  }).catch(err => { console.error(err); toast('Couldn\u2019t create the group link. Check your connection and try again.'); });
-});
-
 async function createSession(firstCode) {
   let sess = null;
   for (let i = 0; i < 4 && !sess; i++) {
@@ -1139,21 +1113,16 @@ async function createSession(firstCode) {
     if (!error) sess = data; else if (error.code !== '23505') throw error;
   }
   if (!sess) throw new Error('code collision');
-  // move the people already entered into the group, keeping order
-  const local = S.people.filter(p => isSelf(p) || p.address.trim() || p.name);
-  const rows = local.map((p, i) => ({
-    session_id: sess.id, slot: i, client_id: CLIENT_ID,
-    name: isSelf(p) ? (p.name || myName()) : p.name, address: p.address, lat: hasLoc(p) ? p.lat : null, lng: hasLoc(p) ? p.lng : null,
-  }));
-  const selfIdx = local.findIndex(isSelf);
+  const local = [...S.people].sort((a, b) => (isSelf(b) - isSelf(a)) || a.slot - b.slot);
+  const rows = local.map((p, i) => ({ session_id: sess.id, slot: i, client_id: CLIENT_ID, name: isSelf(p) ? myName() : p.name, address: p.address, lat: hasLoc(p) ? p.lat : null, lng: hasLoc(p) ? p.lng : null }));
   const { error } = await supa.from('participants').insert(rows);
   if (error) throw error;
-  store.set('self_' + sess.code, selfIdx);
-  await enterSession(sess, selfIdx);
+  store.set('self_' + sess.code, 0);
+  S.mySlot = 0;
+  await enterSession(sess, 0);
   return sess.code;
 }
-
-async function insertParticipant(fields, wantSelf) {
+async function insertParticipant(fields) {
   for (let tries = 0; tries < 6; tries++) {
     const { data: rows } = await supa.from('participants').select('slot').eq('session_id', S.session.id);
     const slot = nextFreeSlot((rows || []).map(r => r.slot));
@@ -1164,40 +1133,35 @@ async function insertParticipant(fields, wantSelf) {
   }
   return null;
 }
-
+async function addManual(name, address, lat, lng) {
+  if (S.people.length >= MAX_PEOPLE) return;
+  if (S.session) {
+    const row = await insertParticipant({ name, address, lat, lng });
+    if (row) { upsertPersonFromRow(row); route(); scheduleAuto(true); }
+  } else {
+    S.people.push(localPerson(nextFreeSlot(S.people.map(p => p.slot)), { name, address, lat, lng }));
+    route(); scheduleAuto(true);
+  }
+}
 async function enterSession(sess, mySlot) {
   S.session = { id: sess.id, code: sess.code };
   S.mySlot = mySlot;
-  S.sessionState = sess.state || {};
+  S.invite = null;
   history.replaceState(null, '', `?g=${sess.code}`);
   store.set('session', sess.code);
-  $('#group-code').textContent = sess.code;
-  $('#group-banner').hidden = false;
-  applyState(S.sessionState, true);
+  applyState(sess.state || {}, true);
   subscribe();
   await refetch();
 }
-
-function leaveSessionLocally() {
-  if (S.channel) { supa.removeChannel(S.channel); S.channel = null; }
-  S.session = null; store.del('session');
-  history.replaceState(null, '', location.pathname);
-  $('#group-banner').hidden = true;
-}
-
 function toPerson(r) {
   return { key: 'p' + r.id, id: r.id, slot: r.slot, name: r.name || '', address: r.address || '', lat: r.lat, lng: r.lng, owner: r.client_id };
 }
 function upsertPersonFromRow(r) {
   const cur = S.people.find(p => p.id === r.id);
   if (!cur) { S.people.push(toPerson(r)); return; }
-  // Rows I own are edited here; the server only echoes my own saves back,
-  // which can arrive out of order. Keep the local copy for those.
-  if (isMine(cur)) return;
-  // Update in place so the row's event handlers keep pointing at the same object.
+  if (isMine(cur)) return;   // I'm the only writer of my rows; ignore echoes
   Object.assign(cur, toPerson(r), { key: cur.key });
 }
-
 async function refetch() {
   if (!S.session) return;
   const [{ data: rows, error }, { data: sess }] = await Promise.all([
@@ -1206,193 +1170,122 @@ async function refetch() {
   ]);
   if (error) { toast('Lost touch with the group. Reconnecting…'); return; }
   const ids = new Set(rows.map(r => r.id));
-  S.people = S.people.filter(p => !p.id || ids.has(p.id)).filter(p => p.id);
+  S.people = S.people.filter(p => p.id && ids.has(p.id));
   rows.forEach(upsertPersonFromRow);
-  renderPeople();
   if (sess) applyState(sess.state || {});
-  if (!S.people.some(isSelf)) {
-    // my row is gone (removed elsewhere); fall back to a solo plan
-    leaveSessionLocally(); resetLocal(); toast('You’re no longer in that group.');
-    return;
-  }
-  resolvePending();
+  if (!S.people.some(isSelf)) { leaveLocally(); resetLocal(); toast('You’re no longer in that group.'); return; }
+  route();
   scheduleAuto(false);
 }
-
 function subscribe() {
   if (S.channel) supa.removeChannel(S.channel);
   const id = S.session.id;
   S.channel = supa.channel('g-' + id)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'participants', filter: `session_id=eq.${id}` }, onParticipant)
-    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'sessions', filter: `id=eq.${id}` }, p => applyState(p.new.state || {}))
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'sessions', filter: `id=eq.${id}` }, p => { applyState(p.new.state || {}); route(); })
     .subscribe(status => { if (status === 'SUBSCRIBED') refetch(); });
 }
-
 function onParticipant(p) {
   if (p.eventType === 'DELETE') {
     const gone = S.people.find(x => x.id === p.old.id);
     S.people = S.people.filter(x => x.id !== p.old.id);
-    renderPeople();
-    scheduleAuto(false);
+    route(); scheduleAuto(false);
     if (gone && !isMine(gone) && gone.name) toast(`${gone.name} left the group.`);
     return;
   }
   const r = p.new;
   const isNew = !S.people.some(x => x.id === r.id);
   upsertPersonFromRow(r);
-  renderPeople();
-  scheduleAuto(false);
-  if (S.results && $('#results').classList.contains('is-active')) $('#stale').hidden = !(S.results.sig !== signature());
+  route(); scheduleAuto(false);
   if (r.client_id === CLIENT_ID) return;
-  if (isNew && r.name) toast(`${r.name} joined the group.`);
-  else if (p.eventType === 'UPDATE' && r.address && p.old && !p.old.address) toast(`${r.name || 'Someone'} added where they’re coming from.`);
+  if (isNew && r.name) toast(`${r.name} joined.`);
+  else if (p.eventType === 'UPDATE' && r.lat != null && p.old && p.old.lat == null) toast(`${r.name || 'Someone'} added where they’re coming from.`);
 }
-
 async function pushState(patch) {
   if (!S.session) return;
   S.sessionState = { ...S.sessionState, ...patch };
   const { error } = await supa.from('sessions').update({ state: S.sessionState }).eq('id', S.session.id);
   if (error) toast('Couldn’t share that with the group. Check your connection.');
 }
-
-function applyState(st, initial) {
+function applyState(st, initialLoad) {
   S.sessionState = st || {};
-  if (st.mode && MODES[st.mode] && st.mode !== S.mode) { S.mode = st.mode; renderModes(); }
-  if (Array.isArray(st.types) && st.types.length && st.types.join() !== S.types.join()) { S.types = st.types; renderTypes(); }
-  const prevResultsAt = S.results && S.results.at;
-  if (st.results && st.results.at !== prevResultsAt && (!S.results || st.results.at > S.results.at)) {
-    S.results = st.results; S.autoError = null;
-    if ($('#results').classList.contains('is-active')) { renderResults(); drawMap(); }
-  }
-  scheduleAuto(false);
-  const prevChosen = S.chosen && S.chosen.id;
+  if (st.mode && MODES[st.mode] && st.mode !== S.mode) S.mode = st.mode;
+  if (Array.isArray(st.types) && st.types.length && st.types.join() !== S.types.join()) S.types = st.types;
+  if (st.results && (!S.results || st.results.at > S.results.at)) { S.results = st.results; S.autoError = null; }
+  const prev = S.chosen && S.chosen.id;
   S.chosen = st.chosen || null;
-  if ((S.chosen && S.chosen.id) !== prevChosen) {
-    if ($('#results').classList.contains('is-active') && S.results) { renderResults(); drawMap(); }
-    if (!initial && S.chosen && S.chosen.byClient !== CLIENT_ID) toast(`${S.chosen.by} picked ${S.chosen.name}.`);
-  }
-  refreshBanners();
+  if (!initialLoad && S.chosen && S.chosen.id !== prev && S.chosen.byClient !== CLIENT_ID) toast(`${S.chosen.by} picked ${S.chosen.name}.`);
+  scheduleAuto(false);
+}
+// persist one of my rows
+const commitQueue = new Map();
+function commit(p) {
+  if (isSelf(p) && hasLoc(p)) store.set('lastStart', { address: p.address, lat: p.lat, lng: p.lng });
+  scheduleAuto(true);
+  if (!S.session || !p.id) return;
+  clearTimeout(commitQueue.get(p.key));
+  commitQueue.set(p.key, setTimeout(async () => {
+    const { error } = await supa.from('participants').update({
+      name: p.name, address: p.address, lat: hasLoc(p) ? p.lat : null, lng: hasLoc(p) ? p.lng : null, updated_at: new Date().toISOString(),
+    }).eq('id', p.id);
+    if (error) toast('Couldn’t save that to the group. Check your connection.');
+  }, 250));
 }
 
-function refreshBanners() {
-  refreshChosenBanners();
-  updateCTA();
-}
-
-// joining via link / code
+// joining via link or code
 async function openGroup(code) {
   code = (code || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
-  if (code.length !== 6 || !needSupa()) return;
+  if (code.length !== 6) return;
+  if (!supa) { toast('Group links can’t connect right now. Check your connection and reload.'); return; }
   const { data: sess, error } = await supa.from('sessions').select('id, code, state').eq('code', code).maybeSingle();
-  if (error || !sess) { toast('That group code didn’t match anything. Check it and try again.'); history.replaceState(null, '', location.pathname); return; }
+  if (error || !sess) { toast('That link or code didn’t match a group. Ask for a new one.'); history.replaceState(null, '', location.pathname); return; }
   const { data: rows } = await supa.from('participants').select('*').eq('session_id', sess.id).order('slot');
   const savedSelf = store.get('self_' + code, null);
   const mine = (rows || []).find(r => r.client_id === CLIENT_ID && r.slot === savedSelf);
   if (mine) { S.people = []; await enterSession(sess, mine.slot); return; }
   const host = (rows || []).find(r => r.slot === 0) || (rows || [])[0];
-  $('#join-title').textContent = host && host.name ? `${host.name} invited you` : 'You’re invited';
-  $('#join-lede').textContent = `Add where you’re coming from and Midcamino finds somewhere fair for ${rows && rows.length ? 'all ' + (rows.length + 1) + ' of you' : 'everyone'}.`;
-  $('#join-name').value = myName();
-  const me = S.people.find(isSelf);
-  $('#join-addr').value = me && me.address ? me.address : '';
-  joinDraft.lat = me && hasLoc(me) ? me.lat : null; joinDraft.lng = me && hasLoc(me) ? me.lng : null;
-  joinDraft.sess = sess;
-  openModal('#join-modal');
+  S.invite = { sess, hostName: host && host.name, count: (rows || []).length };
+  S.people = []; S.results = null; S.chosen = null;
+  history.replaceState(null, '', `?g=${code}`);
+  route();
 }
-const joinDraft = { lat: null, lng: null, sess: null };
-$('#join-addr').addEventListener('input', () => { joinDraft.lat = joinDraft.lng = null; });
-$('#join-gps').innerHTML = ICON.gps;
-$('#join-gps').addEventListener('click', () => {
-  useGPSInto($('#join-addr'), (label, lat, lng) => { joinDraft.lat = lat; joinDraft.lng = lng; });
-});
-function useGPSInto(input, done) {
-  if (!navigator.geolocation) { toast('This browser can’t share your location. Type an address instead.'); return; }
-  input.placeholder = 'Finding you…';
-  navigator.geolocation.getCurrentPosition(async pos => {
-    const lat = pos.coords.latitude, lng = pos.coords.longitude;
-    let label = 'My current location';
-    try { if (G) label = await reverseGeocode(lat, lng); } catch {}
-    input.value = label; done(label, lat, lng);
-  }, () => { input.placeholder = 'Address, station or place'; toast('Location access was blocked. Type an address instead.'); }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 });
+async function joinInvite(address, lat, lng) {
+  const inv = S.invite; if (!inv) return;
+  const name = ($('#start-name').value || myName()).trim();
+  S.session = { id: inv.sess.id, code: inv.sess.code };
+  const row = await insertParticipant({ name, address, lat, lng });
+  if (!row) { S.session = null; return; }
+  store.set('self_' + inv.sess.code, row.slot);
+  S.people = [];
+  await enterSession(inv.sess, row.slot);
+  scheduleAuto(true);
+  toast('You’re in.');
 }
-attachAutocomplete($('#join-addr'), place => {
-  if (!place.geometry) return;
-  joinDraft.lat = place.geometry.location.lat(); joinDraft.lng = place.geometry.location.lng();
-});
-$('#join-form').addEventListener('submit', async e => {
-  e.preventDefault();
-  const name = $('#join-name').value.trim(); if (!name) return;
-  const address = $('#join-addr').value.trim();
-  const btn = $('#join-submit'); btn.disabled = true; btn.textContent = 'Joining…';
-  try {
-    store.set('name', name);
-    if (address && joinDraft.lat == null && G) { try { const l = await geocode(address); joinDraft.lat = l.lat; joinDraft.lng = l.lng; } catch {} }
-    S.session = { id: joinDraft.sess.id, code: joinDraft.sess.code };
-    const row = await insertParticipant({ name, address, lat: joinDraft.lat, lng: joinDraft.lng });
-    if (!row) { S.session = null; return; }
-    store.set('self_' + joinDraft.sess.code, row.slot);
-    if (address) store.set('lastStart', { address, lat: joinDraft.lat, lng: joinDraft.lng });
-    S.people = [];
-    closeModal('#join-modal');
-    await enterSession(joinDraft.sess, row.slot);
-    scheduleAuto(true);
-    toast(address ? 'You’re in. Everyone can see where you’re coming from.' : 'You’re in. Add where you’re coming from when you know.');
-  } finally { btn.disabled = false; btn.textContent = 'Join the group'; }
-});
-$('#join-modal').addEventListener('click', e => {
-  if (e.target.closest('[data-close]') || e.target === $('#join-modal')) history.replaceState(null, '', location.pathname);
-});
-
-$('#code-btn').addEventListener('click', () => {
-  if (S.session) { leaveGroup(); return; }
-  $('#code-input').value = ''; openModal('#code-modal');
-});
-$('#code-input').addEventListener('input', e => { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); });
-$('#code-form').addEventListener('submit', e => { e.preventDefault(); closeModal('#code-modal'); openGroup($('#code-input').value); });
-
-async function leaveGroup() {
-  const me = S.people.find(isSelf);
-  const keep = me ? { address: me.address, lat: me.lat, lng: me.lng } : null;
-  if (me && me.id) await supa.from('participants').delete().eq('id', me.id);
-  const code = S.session && S.session.code;
-  leaveSessionLocally();
-  if (code) store.del('self_' + code);
-  resetLocal(keep);
-  toast('You left the group.');
+function leaveLocally() {
+  if (S.channel) { supa.removeChannel(S.channel); S.channel = null; }
+  if (S.session) store.del('self_' + S.session.code);
+  S.session = null; S.invite = null; store.del('session');
+  history.replaceState(null, '', location.pathname);
+}
+function resetLocal() {
+  S.mySlot = 0; S.results = null; S.chosen = null; S.sessionState = {}; S.autoError = null; S.failedSig = null;
+  S.people = []; lastFitKey = ''; listKey = '';
+  route();
+}
+async function startOver() {
+  const m = me();
+  if (S.session && m && m.id) supa.from('participants').delete().eq('id', m.id);
+  leaveLocally(); resetLocal();
 }
 
-function resetLocal(keep) {
-  S.mySlot = 0; S.results = null; S.chosen = null; S.sessionState = {};
-  const last = keep || store.get('lastStart', null);
-  S.people = [localPerson(0, { name: myName(), ...(last ? { address: last.address || '', lat: last.lat ?? null, lng: last.lng ?? null } : {}) }), localPerson(1)];
-  showScreen('plan'); renderPeople(); refreshBanners(); resolvePending();
-}
-
-function syncHeader() { $('#code-btn').textContent = S.session ? 'Leave group' : 'Join with a code'; }
-const _render = renderPeople;
-renderPeople = function () { _render(); syncHeader(); };
-
-// keep realtime honest when the phone wakes up
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && S.session) refetch(); });
-window.addEventListener('online', () => { if (S.session) { subscribe(); } });
-
-$('#add-btn').addEventListener('click', addPerson);
-$('#find-btn').addEventListener('click', showResults);
+window.addEventListener('online', () => { if (S.session) subscribe(); });
 
 // ───────────────────────── boot ─────────────────────────
 (function boot() {
-  renderModes(); renderTypes();
-  resetLocal();
   const q = new URLSearchParams(location.search);
-  // old-style prefilled links (?p0=...&p1=...)
-  const pre = [0, 1, 2, 3, 4].map(i => q.get('p' + i)).filter(Boolean);
-  if (pre.length) {
-    S.people = pre.map((a, i) => localPerson(i, { address: a }));
-    if (S.people.length < MAX_PEOPLE) S.people.push(localPerson(S.people.length));
-    S.mySlot = S.people.length - 1;
-    renderPeople();
-  }
   const code = q.get('g') || q.get('session');
+  route();
   if (code) openGroup(code);
   else {
     const saved = store.get('session', null);
