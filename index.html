@@ -3,989 +3,1318 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>Midcamino</title>
-<meta name="description" content="Midcamino — find a spot that's fair for everyone" />
-<meta name="theme-color" content="#b5451b" />
+<title>Midcamino: find a spot that's fair for everyone</title>
+<meta name="description" content="Midcamino finds places to meet where nobody travels much further than anyone else." />
+<meta name="theme-color" content="#ffffff" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <meta name="apple-mobile-web-app-title" content="Midcamino" />
+<meta property="og:title" content="Midcamino" />
+<meta property="og:description" content="Find somewhere to meet that's fair for everyone." />
 <link rel="manifest" href="manifest.json" />
-<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<link rel="icon" href="icons/icon-192.png" />
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,650;12..96,800&display=swap" rel="stylesheet" />
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fdf6f3; min-height: 100vh; padding: 1.5rem 1rem; }
-  .app { max-width: 480px; margin: 0 auto; }
-  .logo { font-size: 26px; font-weight: 600; color: #b5451b; margin-bottom: 4px; }
-  .tagline { font-size: 13px; color: #888; margin-bottom: 1.5rem; }
-  .card { background: #fff; border: 1px solid #e8e8e5; border-radius: 14px; padding: 1.1rem 1.25rem; margin-bottom: 12px; }
-  .section-label { font-size: 11px; font-weight: 600; color: #aaa; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 10px; }
-  .person-row { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px; }
-  .avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; flex-shrink: 0; margin-top: 6px; }
-  .addr-wrap { flex: 1; position: relative; }
-  .addr-wrap input { width: 100%; padding: 9px 58px 9px 11px; font-size: 14px; border: 1px solid #ddd; border-radius: 9px; background: #fafaf9; color: #1a1a1a; outline: none; font-family: inherit; }
-  .addr-wrap input:focus { border-color: #b5451b; background: #fff; }
-  .gps-btn { position: absolute; right: 30px; top: 9px; background: none; border: none; cursor: pointer; color: #aaa; font-size: 16px; line-height: 1; padding: 0; }
-  .gps-btn:hover { color: #555; }
-  .remove-btn { position: absolute; right: 8px; top: 7px; background: none; border: none; cursor: pointer; color: #ccc; font-size: 20px; line-height: 1; padding: 0; }
-  .remove-btn:hover { color: #e05; }
-  .add-person-btn { width: 100%; padding: 8px; font-size: 13px; border: 1px dashed #ccc; border-radius: 9px; background: transparent; color: #999; cursor: pointer; font-family: inherit; margin-top: 2px; }
-  .add-person-btn:hover { border-color: #b5451b; color: #b5451b; background: #fceee9; }
-  .modes { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
-  .mode-btn { flex: 1; min-width: 70px; padding: 7px 4px; font-size: 12px; font-weight: 500; border: 1px solid #ddd; border-radius: 8px; background: transparent; color: #888; cursor: pointer; font-family: inherit; transition: all 0.15s; }
-  .mode-btn.active { background: #fceee9; color: #b5451b; border-color: transparent; }
-  .place-types { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
-  .type-chip { padding: 5px 13px; font-size: 13px; border: 1px solid #ddd; border-radius: 99px; background: transparent; color: #888; cursor: pointer; font-family: inherit; transition: all 0.15s; }
-  .type-chip.active { border-color: #b5451b; color: #b5451b; font-weight: 500; }
-  .count-row { display: flex; align-items: center; gap: 12px; }
-  .count-row label { font-size: 13px; color: #888; }
-  .count-row input[type=range] { flex: 1; accent-color: #b5451b; }
-  .count-val { font-size: 14px; font-weight: 600; min-width: 20px; text-align: right; color: #1a1a1a; }
-  .search-btn { width: 100%; padding: 12px; font-size: 15px; font-weight: 600; border-radius: 10px; border: none; background: #b5451b; color: #fff; cursor: pointer; margin-top: 4px; font-family: inherit; transition: opacity 0.15s; }
-  .search-btn:hover { opacity: 0.88; }
-  .search-btn:disabled { opacity: 0.4; cursor: default; }
-  #map { width: 100%; height: 300px; border-radius: 14px; border: 1px solid #e8e8e5; margin: 14px 0 10px; display: none; }
-  .result-card { background: #fff; border: 1px solid #e8e8e5; border-radius: 14px; padding: 1rem 1.25rem; margin-bottom: 10px; }
-  .result-name { font-size: 15px; font-weight: 600; color: #1a1a1a; margin-bottom: 2px; }
-  .result-addr { font-size: 12px; color: #999; margin-bottom: 8px; }
-  .travel-chips { display: flex; gap: 6px; flex-wrap: wrap; }
-  .tchip { font-size: 12px; padding: 3px 10px; border-radius: 99px; font-weight: 600; }
-  .tchip.ptype { background: #f5f0ff; color: #5b3fa8; }
-  .rating-row { display: flex; align-items: center; gap: 5px; margin-top: 7px; }
-  .stars { color: #FFD000; font-size: 13px; letter-spacing: 1px; }
-  .rating-num { font-size: 13px; color: #999; }
-  .status-msg { font-size: 13px; color: #999; text-align: center; padding: 1.5rem 0; display: none; }
-  .error-msg { font-size: 13px; color: #b33; text-align: center; padding: 1rem 0; display: none; background: #fff5f5; border-radius: 8px; margin-top: 8px; }
-  .reset-btn { width: 100%; padding: 9px; font-size: 13px; border: 1px solid #ddd; border-radius: 10px; background: transparent; color: #888; cursor: pointer; margin-top: 6px; font-family: inherit; display: none; }
-  .reset-btn:hover { background: #fdf6f3; }
-  .share-btn { width: 100%; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 10px; border: none; background: #FFD000; color: #b5451b; cursor: pointer; margin-top: 8px; font-family: inherit; transition: opacity 0.15s; display: none; }
-  .share-btn:hover { opacity: 0.88; }
-  .share-invite { width: 100%; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 10px; border: 1.5px dashed #b5451b; background: transparent; color: #b5451b; cursor: pointer; margin-top: 6px; font-family: inherit; transition: all 0.15s; display: none; }
-  .share-invite:hover { background: #fceee9; }
-  .session-bar { display: none; background: #fceee9; border: 1.5px solid #b5451b; border-radius: 12px; padding: 12px 16px; margin-bottom: 12px; }
-  .session-bar-title { font-size: 12px; font-weight: 600; color: #b5451b; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; }
-  .session-code { font-size: 22px; font-weight: 700; color: #b5451b; letter-spacing: 4px; text-align: center; margin: 6px 0; }
-  .session-members { font-size: 13px; color: #8a3414; margin-bottom: 8px; }
-  .session-member { display: inline-block; background: #b5451b; color: white; border-radius: 99px; padding: 2px 10px; font-size: 12px; font-weight: 600; margin: 2px 3px 2px 0; }
-  .session-actions { display: flex; gap: 8px; }
-  .session-copy-btn { flex: 1; padding: 8px; font-size: 13px; font-weight: 600; border-radius: 8px; border: none; background: #b5451b; color: white; cursor: pointer; font-family: inherit; }
-  .session-leave-btn { padding: 8px 14px; font-size: 13px; font-weight: 600; border-radius: 8px; border: 1px solid #b5451b; background: transparent; color: #b5451b; cursor: pointer; font-family: inherit; }
-  .session-join-bar { display: none; background: #fff; border: 1px solid #e8e8e5; border-radius: 12px; padding: 12px 16px; margin-bottom: 12px; }
-  .session-join-row { display: flex; gap: 8px; align-items: center; }
-  .session-join-row input { flex: 1; padding: 8px 12px; font-size: 16px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; outline: none; text-align: center; }
-  .session-join-row input:focus { border-color: #b5451b; }
-  .session-join-btn { padding: 8px 16px; font-size: 13px; font-weight: 600; border-radius: 8px; border: none; background: #b5451b; color: white; cursor: pointer; font-family: inherit; }
-  .start-session-btn { width: 100%; padding: 9px; font-size: 13px; font-weight: 600; border-radius: 10px; border: 1.5px dashed #b5451b; background: transparent; color: #b5451b; cursor: pointer; font-family: inherit; margin-bottom: 10px; }
-  .start-session-btn:hover { background: #fceee9; }
-  .share-toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1a1a1a; color: white; padding: 10px 20px; border-radius: 99px; font-size: 13px; font-weight: 500; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 999; white-space: nowrap; }
-  .share-toast.show { opacity: 1; }
-  .result-card { cursor: pointer; transition: box-shadow 0.15s, border-color 0.15s, background 0.1s; -webkit-tap-highlight-color: transparent; }
-  .result-card:hover { border-color: #b5451b; box-shadow: 0 2px 12px rgba(181,69,27,0.10); }
-  .result-card:active { background: #fceee9; }
-  .result-card.active { border-color: #b5451b; box-shadow: 0 2px 12px rgba(181,69,27,0.15); background: #fdf6f3; }
-  .tap-hint { font-size: 11px; color: #bbb; margin-top: 6px; }
-  .card-expand { display: none; border-top: 1px solid #f0f0ee; margin: 8px -1.25rem -1rem; padding: 12px 1.25rem 1rem; }
-  .card-expand.open { display: block; }
-  .expand-actions { display: flex; gap: 8px; margin-bottom: 12px; }
-  .expand-action { flex: 1; padding: 7px 4px; font-size: 12px; font-weight: 600; border-radius: 8px; border: 1px solid #ddd; background: transparent; color: #555; cursor: pointer; font-family: inherit; text-align: center; text-decoration: none; display: block; }
-  .expand-action:hover { background: #fdf6f3; }
-  .expand-action.primary { background: #b5451b; color: #fff; border-color: transparent; }
-  .expand-action.primary:hover { opacity: 0.88; background: #b5451b; }
-  .expand-photos { display: flex; gap: 6px; overflow-x: auto; margin: 0 -1.25rem 12px; padding: 0 1.25rem; scrollbar-width: none; }
-  .expand-photos::-webkit-scrollbar { display: none; }
-  .expand-photo { width: 110px; height: 80px; object-fit: cover; border-radius: 8px; flex-shrink: 0; }
-  .expand-hours { font-size: 12px; font-weight: 600; margin-bottom: 10px; }
-  .expand-loading { font-size: 13px; color: #999; padding: 4px 0 8px; }
-  .expand-reviews-link { font-size: 13px; color: #b5451b; font-weight: 600; text-decoration: none; display: block; text-align: center; padding: 6px 0 2px; }
-  .expand-reviews-link:hover { opacity: 0.8; }
-  .pac-container { border-radius: 10px !important; border: 1px solid #ddd !important; box-shadow: 0 4px 16px rgba(0,0,0,0.10) !important; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important; margin-top: 3px !important; }
-  .pac-item { padding: 8px 12px !important; font-size: 13px !important; cursor: pointer; }
-  .pac-item:hover { background: #f5f5f3 !important; }
-  .pac-item-query { font-size: 13px !important; color: #1a1a1a !important; }
-  .pac-matched { font-weight: 600 !important; }
+:root {
+  --ink: #26160f;
+  --muted: #74665d;
+  --faint: #a2968d;
+  --line: #e8e2db;
+  --paper: #ffffff;
+  --mist: #f3f4f1;
+  --terra: #b5451b;
+  --terra-deep: #8f3412;
+  --terra-soft: #fbece5;
+  --sun: #ffd000;
+  --sun-soft: #fff5c2;
+  --ok: #1d7a4a;
+  --bad: #b3261e;
+  --display: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
+  --body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body { font-family: var(--body); color: var(--ink); background: var(--paper); font-size: 16px; line-height: 1.45; -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; background: none; border: 0; }
+[hidden] { display: none !important; }
+:focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; border-radius: 10px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.screen { display: none; min-height: 100%; }
+.screen.is-active { display: block; }
+
+/* ---------- plan screen ---------- */
+.plan { max-width: 520px; margin: 0 auto; padding: max(14px, env(safe-area-inset-top)) 20px calc(110px + var(--safe-b)); }
+.topbar { display: flex; align-items: center; justify-content: space-between; height: 48px; }
+.brand { display: flex; align-items: center; gap: 8px; font-family: var(--display); font-weight: 800; font-size: 21px; letter-spacing: -0.02em; color: var(--terra); }
+.link-btn { font-size: 14px; font-weight: 600; color: var(--muted); padding: 8px 4px; }
+.link-btn:hover { color: var(--terra); }
+
+.title { font-family: var(--display); font-weight: 800; font-size: clamp(30px, 8.4vw, 40px); line-height: 1.02; letter-spacing: -0.03em; margin: 22px 0 18px; text-wrap: balance; }
+.h2 { font-family: var(--display); font-weight: 650; font-size: 17px; letter-spacing: -0.01em; margin: 30px 0 10px; }
+
+.banner { display: flex; gap: 12px; align-items: center; border-radius: 16px; padding: 12px 14px; margin-top: 12px; font-size: 14px; }
+.banner p { color: var(--muted); font-size: 13px; }
+.banner strong { font-weight: 650; }
+.banner .grow { flex: 1; min-width: 0; }
+.banner-group { background: var(--terra-soft); }
+.banner-results { background: var(--mist); }
+.banner-chosen { background: var(--sun-soft); }
+.code-pill { font-family: var(--display); font-weight: 800; letter-spacing: 0.12em; font-size: 13px; color: var(--terra-deep); background: #fff; border-radius: 6px; padding: 1px 6px; margin-left: 4px; }
+.small-btn { flex-shrink: 0; font-size: 14px; font-weight: 650; border-radius: 999px; padding: 8px 14px; background: var(--terra); color: #fff; }
+.small-btn.alt { background: #fff; color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); }
+.text-btn { font-size: 13px; font-weight: 600; color: var(--muted); text-decoration: underline; text-underline-offset: 2px; padding: 4px 0; }
+
+/* people */
+.people { list-style: none; position: relative; }
+.people::before { content: ''; position: absolute; left: 17px; top: 30px; bottom: 30px; width: 2px; background: repeating-linear-gradient(to bottom, var(--line) 0 4px, transparent 4px 8px); }
+.person { position: relative; display: flex; gap: 12px; align-items: flex-start; padding: 7px 0; }
+.dot { position: relative; z-index: 1; flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; background: var(--c); color: #fff; display: grid; place-items: center; font-family: var(--display); font-weight: 800; font-size: 15px; margin-top: 6px; box-shadow: 0 0 0 4px var(--paper); }
+.person-main { flex: 1; min-width: 0; }
+.person-name { display: block; width: 100%; border: 0; background: none; font-size: 13px; font-weight: 650; color: var(--muted); padding: 0 2px 4px; outline: none; }
+.person-name::placeholder { color: var(--faint); font-weight: 600; }
+.person-name:focus { color: var(--ink); }
+.field { position: relative; }
+.field input { width: 100%; height: 48px; border-radius: 14px; border: 1.5px solid var(--line); background: var(--paper); padding: 0 48px 0 14px; font-size: 16px; outline: none; transition: border-color .15s; }
+.field input::placeholder { color: var(--faint); }
+.field input:focus { border-color: var(--terra); }
+.field input.is-set { border-color: transparent; background: var(--mist); }
+.field-btn { position: absolute; right: 4px; top: 4px; width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; color: var(--muted); }
+.field-btn:hover { color: var(--terra); background: var(--terra-soft); }
+.field-btn svg { width: 20px; height: 20px; }
+.remove { flex-shrink: 0; width: 36px; height: 36px; margin-top: 26px; border-radius: 10px; display: grid; place-items: center; color: var(--faint); }
+.remove:hover { color: var(--bad); background: #fdeceb; }
+.remove svg { width: 18px; height: 18px; }
+.readonly { min-height: 48px; border-radius: 14px; background: var(--mist); padding: 12px 14px; font-size: 15px; }
+.readonly.waiting { background: none; border: 1.5px dashed var(--line); color: var(--faint); }
+.readonly.waiting::after { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--terra); margin-left: 8px; vertical-align: middle; animation: blink 1.4s infinite; }
+@keyframes blink { 50% { opacity: .2; } }
+
+.add-row { display: flex; align-items: center; gap: 12px; padding: 7px 0 0; color: var(--terra); font-weight: 650; font-size: 15px; }
+.add-row .dot { background: var(--paper); color: var(--terra); box-shadow: 0 0 0 4px var(--paper), inset 0 0 0 1.5px var(--terra); margin-top: 0; font-size: 20px; font-weight: 650; }
+
+.invite { display: flex; gap: 14px; align-items: center; width: 100%; text-align: left; margin-top: 22px; padding: 16px; border-radius: 18px; background: var(--sun); color: var(--ink); transition: transform .12s; }
+.invite:active { transform: scale(.985); }
+.invite-ic { flex-shrink: 0; width: 44px; height: 44px; border-radius: 50%; background: var(--ink); color: var(--sun); display: grid; place-items: center; }
+.invite-ic svg { width: 22px; height: 22px; }
+.invite strong { display: block; font-family: var(--display); font-weight: 800; font-size: 18px; letter-spacing: -0.015em; line-height: 1.15; }
+.invite small { display: block; font-size: 13px; color: #5b4a2c; margin-top: 3px; line-height: 1.35; }
+
+.seg { display: grid; grid-template-columns: repeat(4, 1fr); background: var(--mist); border-radius: 14px; padding: 4px; gap: 4px; }
+.seg button { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 9px 2px 8px; border-radius: 10px; font-size: 13px; font-weight: 600; color: var(--muted); }
+.seg button svg { width: 22px; height: 22px; }
+.seg button[aria-checked="true"] { background: var(--paper); color: var(--terra); box-shadow: 0 1px 2px rgba(38,22,15,.08), 0 0 0 1px var(--line); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { height: 40px; padding: 0 16px; border-radius: 999px; font-size: 15px; font-weight: 600; box-shadow: inset 0 0 0 1.5px var(--line); color: var(--muted); }
+.chip[aria-pressed="true"] { background: var(--ink); color: #fff; box-shadow: none; }
+
+.cta-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; padding: 14px 20px calc(14px + var(--safe-b)); background: linear-gradient(to top, var(--paper) 70%, rgba(255,255,255,0)); }
+.cta { display: block; width: 100%; max-width: 480px; margin: 0 auto; height: 56px; border-radius: 18px; background: var(--terra); color: #fff; font-family: var(--display); font-weight: 800; font-size: 18px; letter-spacing: -0.01em; transition: background .15s, transform .12s; }
+.cta:active { transform: scale(.985); }
+.cta:disabled { background: #e9e4df; color: var(--faint); cursor: default; transform: none; }
+
+/* ---------- results screen ---------- */
+.results { position: relative; }
+.map-wrap { position: fixed; top: 0; left: 0; right: 0; height: 42vh; background: var(--mist); }
+#map { width: 100%; height: 100%; }
+.back { position: absolute; top: max(12px, env(safe-area-inset-top)); left: 12px; z-index: 2; display: flex; align-items: center; gap: 4px; height: 40px; padding: 0 14px 0 10px; border-radius: 999px; background: var(--paper); font-weight: 650; font-size: 15px; box-shadow: 0 2px 10px rgba(38,22,15,.16); }
+.back svg { width: 18px; height: 18px; }
+.sheet { position: relative; z-index: 3; margin-top: calc(42vh - 22px); min-height: calc(58vh + 22px); background: var(--paper); border-radius: 22px 22px 0 0; padding: 10px 16px calc(32px + var(--safe-b)); box-shadow: 0 -6px 24px rgba(38,22,15,.10); }
+.grab { width: 40px; height: 4px; border-radius: 4px; background: var(--line); margin: 0 auto 14px; }
+.sheet-inner { max-width: 560px; margin: 0 auto; }
+.res-title { font-family: var(--display); font-weight: 800; font-size: 26px; letter-spacing: -0.025em; line-height: 1.1; }
+.res-sub { color: var(--muted); font-size: 14px; margin-top: 4px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 12px 0 4px; font-size: 13px; font-weight: 600; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 10px; height: 10px; border-radius: 50%; background: var(--c); }
+
+.list { list-style: none; margin-top: 10px; }
+.card { border-bottom: 1px solid var(--line); }
+.card-main { display: flex; gap: 12px; width: 100%; text-align: left; padding: 16px 0; }
+.rank { flex-shrink: 0; width: 28px; height: 28px; border-radius: 9px; background: var(--ink); color: #fff; display: grid; place-items: center; font-family: var(--display); font-weight: 800; font-size: 14px; margin-top: 1px; }
+.card.is-open .rank, .card.is-chosen .rank { background: var(--sun); color: var(--ink); }
+.card-body { flex: 1; min-width: 0; }
+.card-name { font-family: var(--display); font-weight: 650; font-size: 18px; letter-spacing: -0.015em; line-height: 1.2; }
+.card-meta { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 13px; color: var(--muted); margin-top: 2px; }
+.badge { display: inline-block; font-size: 12px; font-weight: 700; color: var(--terra-deep); background: var(--terra-soft); border-radius: 6px; padding: 1px 7px; margin-left: 6px; vertical-align: 2px; font-family: var(--body); letter-spacing: 0; }
+
+/* the fair line */
+.fair { margin: 14px 0 6px; }
+.track { position: relative; height: 22px; }
+.track::before { content: ''; position: absolute; left: 0; right: 0; top: 10px; height: 2px; background: var(--line); border-radius: 2px; }
+.spread { position: absolute; top: 8px; height: 6px; border-radius: 6px; background: var(--sun); }
+.pin { position: absolute; top: 3px; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%; background: var(--c); box-shadow: 0 0 0 2.5px var(--paper); }
+.scale { display: flex; justify-content: space-between; font-size: 11px; color: var(--faint); margin-top: 2px; font-variant-numeric: tabular-nums; }
+.verdict { font-size: 14px; margin-top: 8px; }
+.verdict b { font-weight: 650; }
+.times { display: flex; flex-wrap: wrap; gap: 4px 12px; list-style: none; margin-top: 6px; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.times > span { display: inline-flex; align-items: center; gap: 5px; }
+.times i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
+.times b { color: var(--ink); font-weight: 650; }
+
+.more { padding: 0 0 18px 40px; }
+.more-status { font-size: 14px; font-weight: 650; margin-bottom: 10px; }
+.photos { display: flex; gap: 8px; overflow-x: auto; margin: 0 -16px 12px -40px; padding: 0 16px 0 40px; scrollbar-width: none; }
+.photos::-webkit-scrollbar { display: none; }
+.photos img { width: 132px; height: 96px; object-fit: cover; border-radius: 12px; flex-shrink: 0; background: var(--mist); }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.act { display: inline-flex; align-items: center; justify-content: center; height: 42px; padding: 0 16px; border-radius: 999px; font-size: 14px; font-weight: 650; text-decoration: none; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--line); }
+.act.primary { background: var(--terra); color: #fff; box-shadow: none; }
+.act.pick { background: var(--sun); box-shadow: none; }
+.act.picked { background: var(--sun-soft); box-shadow: none; }
+.more-link { display: inline-block; margin-top: 12px; font-size: 14px; font-weight: 600; color: var(--terra); text-decoration: none; }
+.note { font-size: 13px; color: var(--muted); padding: 18px 0 0; }
+
+/* ---------- loading ---------- */
+.loading { position: fixed; inset: 0; z-index: 50; background: rgba(255,255,255,.94); display: grid; place-items: center; text-align: center; padding: 24px; }
+.loading svg { width: 160px; height: 80px; }
+.loading .curve { stroke-dasharray: 80; stroke-dashoffset: 80; animation: draw 1.1s ease-out forwards; }
+.loading .meet { transform-origin: 40px 30px; animation: meet 1.6s ease-in-out .5s infinite; }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@keyframes meet { 0%,100% { transform: scale(1); } 50% { transform: scale(1.25); } }
+.loading p { font-family: var(--display); font-weight: 650; font-size: 19px; margin-top: 14px; letter-spacing: -0.01em; }
+
+/* ---------- sheets ---------- */
+.modal { position: fixed; inset: 0; z-index: 60; background: rgba(38,22,15,.4); display: flex; align-items: flex-end; justify-content: center; }
+.modal-card { width: 100%; max-width: 520px; background: var(--paper); border-radius: 24px 24px 0 0; padding: 22px 20px calc(22px + var(--safe-b)); animation: up .22s ease-out; }
+@keyframes up { from { transform: translateY(24px); opacity: 0; } }
+.modal h2 { font-family: var(--display); font-weight: 800; font-size: 26px; letter-spacing: -0.025em; line-height: 1.1; }
+.modal p.lede { color: var(--muted); margin: 6px 0 18px; font-size: 15px; }
+.label { display: block; font-size: 13px; font-weight: 650; color: var(--muted); margin: 14px 0 6px; }
+.plain { width: 100%; height: 48px; border-radius: 14px; border: 1.5px solid var(--line); padding: 0 14px; font-size: 16px; outline: none; }
+.plain:focus { border-color: var(--terra); }
+.code-input { text-transform: uppercase; letter-spacing: .3em; font-family: var(--display); font-weight: 800; font-size: 22px; text-align: center; }
+.modal .cta { margin-top: 20px; }
+.modal .text-btn { display: block; margin: 12px auto 0; }
+
+.toast { position: fixed; left: 50%; bottom: calc(92px + var(--safe-b)); transform: translate(-50%, 12px); z-index: 70; max-width: calc(100% - 40px); background: var(--ink); color: #fff; padding: 11px 18px; border-radius: 14px; font-size: 14px; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; text-align: center; }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+.pac-container { border-radius: 14px; border: 0; box-shadow: 0 8px 28px rgba(38,22,15,.16); margin-top: 6px; font-family: var(--body); }
+.pac-item { padding: 10px 14px; font-size: 14px; line-height: 1.4; border-top-color: var(--line); }
+.pac-item-query { font-size: 15px; color: var(--ink); }
+.pac-icon { display: none; }
+
+@media (min-width: 900px) {
+  .map-wrap { left: 440px; height: 100vh; }
+  .sheet { margin-top: 0; width: 440px; min-height: 100vh; border-radius: 0; box-shadow: 6px 0 24px rgba(38,22,15,.08); padding-top: 72px; }
+  .grab { display: none; }
+  .back { position: fixed; left: 16px; top: 16px; }
+  .toast { bottom: 32px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .loading .curve { stroke-dashoffset: 0; }
+}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-<div class="app">
-  <div class="logo">
-  <svg width="28" height="20" viewBox="0 0 56 40" style="vertical-align:middle;margin-right:6px;margin-bottom:3px">
-    <path d="M 4 12 C 14 12 22 24 28 24 C 34 24 42 12 52 12" fill="none" stroke="#b5451b" stroke-width="4" stroke-linecap="round"/>
-    <circle cx="4" cy="12" r="4" fill="#b5451b" opacity="0.5"/>
-    <circle cx="52" cy="12" r="4" fill="#b5451b" opacity="0.5"/>
-    <circle cx="28" cy="24" r="10" fill="#FFD000"/>
-    <circle cx="28" cy="24" r="4" fill="#b5451b"/>
-  </svg>midcamino</div>
-  <div class="tagline">find a spot that's fair for everyone</div>
 
-  <!-- Session bar (shown when in a session) -->
-  <div class="session-bar" id="session-bar">
-    <div class="session-bar-title">Group session</div>
-    <div class="session-code" id="session-code-display"></div>
-    <div class="session-members" id="session-members"></div>
-    <div class="session-actions">
-      <button class="session-copy-btn" onclick="copySessionLink()">&#128279; Copy invite link</button>
-      <button class="session-leave-btn" onclick="leaveSession()">Leave</button>
+<!-- =================== PLAN =================== -->
+<section id="plan" class="screen is-active" aria-label="Plan a meetup">
+  <div class="plan">
+    <header class="topbar">
+      <div class="brand">
+        <svg width="34" height="24" viewBox="0 0 56 40" aria-hidden="true"><path d="M4 12C14 12 22 24 28 24S42 12 52 12" fill="none" stroke="#b5451b" stroke-width="4" stroke-linecap="round"/><circle cx="4" cy="12" r="4" fill="#b5451b" opacity=".45"/><circle cx="52" cy="12" r="4" fill="#b5451b" opacity=".45"/><circle cx="28" cy="24" r="10" fill="#FFD000"/><circle cx="28" cy="24" r="4" fill="#b5451b"/></svg>
+        midcamino
+      </div>
+      <button class="link-btn" id="code-btn">Join with a code</button>
+    </header>
+
+    <div id="group-banner" class="banner banner-group" hidden>
+      <div class="grow">
+        <strong>Group plan</strong><span class="code-pill" id="group-code"></span>
+        <p id="group-sub">Anyone with the link can add where they're coming from.</p>
+      </div>
+      <button class="small-btn" id="share-link-btn">Share link</button>
     </div>
+
+    <div id="chosen-plan" class="banner banner-chosen" hidden></div>
+
+    <div id="results-ready" class="banner banner-results" hidden>
+      <div class="grow"><strong id="ready-title"></strong><p id="ready-sub"></p></div>
+      <button class="small-btn alt" id="see-results-btn">See them</button>
+    </div>
+
+    <h1 class="title">Where's everyone coming from?</h1>
+
+    <ul id="people" class="people" aria-label="Starting points"></ul>
+    <button class="add-row" id="add-btn"><span class="dot" aria-hidden="true">+</span>Add someone</button>
+
+    <button class="invite" id="invite-btn">
+      <span class="invite-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1 1"/><path d="M14 10a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1-1"/></svg></span>
+      <span><strong id="invite-title">Let friends add their own spot</strong><small id="invite-sub">Send one link to the group chat. Where they're coming from appears here as they add it.</small></span>
+    </button>
+
+    <h2 class="h2" id="mode-label">Getting there</h2>
+    <div class="seg" role="radiogroup" aria-labelledby="mode-label" id="modes"></div>
+
+    <h2 class="h2" id="type-label">Looking for</h2>
+    <div class="chips" role="group" aria-labelledby="type-label" id="types"></div>
   </div>
 
-  <!-- Join session bar -->
-  <div class="session-join-bar" id="session-join-bar">
-    <div class="section-label" style="margin-bottom:8px">Join a group session</div>
-    <div class="session-join-row">
-      <input id="session-code-input" type="text" maxlength="6" placeholder="ABC123" oninput="this.value=this.value.toUpperCase()" />
-      <button class="session-join-btn" onclick="joinSession()">Join</button>
+  <div class="cta-bar"><button class="cta" id="find-btn" disabled>Add at least two starting points</button></div>
+</section>
+
+<!-- =================== RESULTS =================== -->
+<section id="results" class="screen results" aria-label="Meetup spots">
+  <div class="map-wrap">
+    <div id="map" role="region" aria-label="Map of spots"></div>
+    <button class="back" id="back-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Edit</button>
+  </div>
+  <div class="sheet">
+    <div class="grab" aria-hidden="true"></div>
+    <div class="sheet-inner">
+      <div id="chosen-res" class="banner banner-chosen" hidden style="margin:0 0 14px"></div>
+      <div id="stale" class="banner banner-results" hidden style="margin:0 0 14px">
+        <div class="grow"><strong>Someone's starting point changed</strong><p>These spots were found before the change.</p></div>
+        <button class="small-btn" id="refresh-btn">Update</button>
+      </div>
+      <h1 class="res-title" id="res-title"></h1>
+      <p class="res-sub" id="res-sub"></p>
+      <div class="legend" id="legend"></div>
+      <ol class="list" id="list"></ol>
+      <p class="note">Spots are ranked by the longest anyone has to travel, in 10-minute steps, then by how evenly the time is split. Times are Google's current estimates.</p>
     </div>
   </div>
+</section>
 
-  <div class="card">
-    <div class="section-label">Locations</div>
-    <div id="people-list"></div>
-    <button class="add-person-btn" id="add-person-btn" onclick="addPerson()">+ Add another person</button>
+<!-- =================== OVERLAYS =================== -->
+<div id="loading" class="loading" hidden role="status" aria-live="polite">
+  <div>
+    <svg viewBox="0 0 80 40" aria-hidden="true"><path class="curve" d="M6 14C20 14 30 30 40 30S60 14 74 14" fill="none" stroke="#b5451b" stroke-width="4" stroke-linecap="round"/><circle cx="6" cy="14" r="5" fill="#b5451b" opacity=".45"/><circle cx="74" cy="14" r="5" fill="#b5451b" opacity=".45"/><g class="meet"><circle cx="40" cy="30" r="9" fill="#FFD000"/><circle cx="40" cy="30" r="3.5" fill="#b5451b"/></g></svg>
+    <p id="loading-msg">Working out the middle</p>
   </div>
-
-  <button class="start-session-btn" id="start-session-btn" onclick="toggleJoinBar()">&#128101; Plan with a group &mdash; share one link</button>
-
-  <div class="card">
-    <div class="section-label">Travel mode</div>
-    <div class="modes">
-      <button class="mode-btn active" data-mode="DRIVING" onclick="selectMode(this)">Driving</button>
-      <button class="mode-btn" data-mode="TRANSIT" onclick="selectMode(this)">Transit</button>
-      <button class="mode-btn" data-mode="WALKING" onclick="selectMode(this)">Walking</button>
-      <button class="mode-btn" data-mode="BICYCLING" onclick="selectMode(this)">Cycling</button>
-    </div>
-    <div class="section-label">Type of place</div>
-    <div class="place-types">
-      <button class="type-chip active" data-type="bar" onclick="toggleType(this)">Bar</button>
-      <button class="type-chip" data-type="restaurant" onclick="toggleType(this)">Restaurant</button>
-      <button class="type-chip" data-type="cafe" onclick="toggleType(this)">Cafe</button>
-      <button class="type-chip" data-type="park" onclick="toggleType(this)">Park</button>
-      <button class="type-chip" data-type="movie_theater" onclick="toggleType(this)">Cinema</button>
-      <button class="type-chip" data-type="night_club" onclick="toggleType(this)">Club</button>
-    </div>
-    <div class="count-row">
-      <label>Results</label>
-      <input type="range" id="count-slider" min="1" max="10" step="1" value="3"
-        oninput="document.getElementById('count-display').textContent=this.value" />
-      <span class="count-val" id="count-display">3</span>
-    </div>
-  </div>
-
-  <button class="search-btn" id="search-btn" onclick="doSearch()">Find a spot</button>
-  <button class="share-invite" id="share-invite-btn" onclick="shareInvite()">&#128279; Invite others to add their location</button>
-  <button class="reset-btn" id="reset-btn" onclick="resetApp()">Start over</button>
-  <button class="share-btn" id="share-results-btn" onclick="shareResults()">&#127381; Share these results</button>
-  <div class="share-toast" id="share-toast"></div>
-  <div class="status-msg" id="status-msg"></div>
-  <div class="error-msg" id="error-msg"></div>
-  <div id="map"></div>
-  <div id="results-list"></div>
 </div>
 
+<div id="name-modal" class="modal" hidden>
+  <form class="modal-card" id="name-form">
+    <h2>What should friends call you?</h2>
+    <p class="lede">Your name shows next to your starting point in the group.</p>
+    <label class="label" for="name-input">Your name</label>
+    <input class="plain" id="name-input" autocomplete="given-name" maxlength="24" required />
+    <button class="cta" type="submit" id="name-submit">Create group link</button>
+    <button class="text-btn" type="button" data-close>Cancel</button>
+  </form>
+</div>
+
+<div id="join-modal" class="modal" hidden>
+  <form class="modal-card" id="join-form">
+    <h2 id="join-title">You're invited</h2>
+    <p class="lede" id="join-lede">Add where you're coming from and Midcamino finds somewhere fair for everyone.</p>
+    <label class="label" for="join-name">Your name</label>
+    <input class="plain" id="join-name" autocomplete="given-name" maxlength="24" required />
+    <label class="label" for="join-addr">Where you're coming from</label>
+    <div class="field">
+      <input id="join-addr" placeholder="Address, station or place" autocomplete="off" />
+      <button class="field-btn" type="button" id="join-gps" aria-label="Use my current location"></button>
+    </div>
+    <button class="cta" type="submit" id="join-submit">Join the group</button>
+    <button class="text-btn" type="button" data-close>Not now</button>
+  </form>
+</div>
+
+<div id="code-modal" class="modal" hidden>
+  <form class="modal-card" id="code-form">
+    <h2>Join a group</h2>
+    <p class="lede">Enter the 6-character code from your invite.</p>
+    <label class="label sr" for="code-input">Group code</label>
+    <input class="plain code-input" id="code-input" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="K7P2QX" required />
+    <button class="cta" type="submit">Join</button>
+    <button class="text-btn" type="button" data-close>Cancel</button>
+  </form>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
 <script>
+'use strict';
+// ───────────────────────── config ─────────────────────────
 const GKEY = 'AIzaSyCLqZ8CEafy_1_UZgYa-DeDUTI96p9DKHU';
-const MAX_PEOPLE = 5;
-const LABELS = 'ABCDE';
-const COLORS = [
-  { bg: '#fceee9', fg: '#b5451b' },
-  { bg: '#fde8dc', fg: '#8a3414' },
-  { bg: '#fdf3e3', fg: '#92600a' },
-  { bg: '#f9ede8', fg: '#7a2f10' },
-  { bg: '#fde0d0', fg: '#a03010' },
-];
-
-let travelMode = 'DRIVING';
-let map, placesService, distMatSvc, geocoder;
-let markers = [];
-let people = [];
-let nextId = 0;
-
-function selectMode(btn) {
-  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active'); travelMode = btn.dataset.mode;
-}
-function toggleType(btn) {
-  btn.classList.toggle('active');
-  if ([...document.querySelectorAll('.type-chip.active')].length === 0) btn.classList.add('active');
-}
-function getSelectedTypes() {
-  return [...document.querySelectorAll('.type-chip.active')].map(b => b.dataset.type);
-}
-function setStatus(m) { const e = document.getElementById('status-msg'); e.textContent = m; e.style.display = m ? 'block' : 'none'; }
-function setError(m) { const e = document.getElementById('error-msg'); e.textContent = m; e.style.display = m ? 'block' : 'none'; }
-
-function renderPeopleRows() {
-  const list = document.getElementById('people-list');
-  list.innerHTML = '';
-  people.forEach((person, idx) => {
-    const col = COLORS[idx];
-    const label = LABELS[idx];
-    person.label = label;
-    person.ac = null; // reset so autocomplete re-attaches after re-render
-    const row = document.createElement('div');
-    row.className = 'person-row';
-    row.id = 'person-row-' + person.id;
-    row.innerHTML = `
-      <div class="avatar" style="background:${col.bg};color:${col.fg}">${label}</div>
-      <div class="addr-wrap">
-        <input id="addr-${person.id}" type="text" placeholder="Person ${label}'s address" autocomplete="off" value="${person.addrText || ''}" />
-        <button class="gps-btn" onclick="getGPS(${person.id})" title="Use my location">&#9678;</button>
-        ${people.length > 2 && idx >= 1 ? `<button class="remove-btn" onclick="removePerson(${person.id})" title="Remove">&times;</button>` : ''}
-      </div>
-    `;
-    list.appendChild(row);
-    if (window.google && window.google.maps) attachAutocomplete(person);
-  });
-  document.getElementById('add-person-btn').style.display = people.length >= MAX_PEOPLE ? 'none' : 'block';
-}
-
-function addPerson() {
-  if (people.length >= MAX_PEOPLE) return;
-  // Save current input values before re-rendering
-  people.forEach(p => { const el = document.getElementById('addr-' + p.id); if (el) p.addrText = el.value; });
-  people.push({ id: nextId++, label: '', resolvedLoc: null, ac: null, addrText: '' });
-  renderPeopleRows();
-}
-
-function removePerson(id) {
-  const idx = people.findIndex(p => p.id === id);
-  if (people.length <= 2 || idx < 1) return;
-  // Save current input values and clear ac refs before re-rendering
-  people.forEach(p => {
-    const el = document.getElementById('addr-' + p.id);
-    if (el) p.addrText = el.value;
-    p.ac = null;
-  });
-  people.splice(idx, 1);
-  renderPeopleRows();
-}
-
-function attachAutocomplete(person) {
-  const input = document.getElementById('addr-' + person.id);
-  if (!input || !window.google || !window.google.maps || !window.google.maps.places) return;
-  person.ac = null;
-  const ac = new google.maps.places.Autocomplete(input, { types: ['geocode', 'establishment'] });
-  ac.addListener('place_changed', () => {
-    const p = ac.getPlace();
-    person.resolvedLoc = p.geometry ? p.geometry.location : null;
-  });
-  input.addEventListener('input', () => {
-    person.resolvedLoc = null;
-    person.addrText = input.value;
-    checkShowInvite();
-  });
-  person.ac = ac;
-}
-
-function initMap() {
-  geocoder = new google.maps.Geocoder();
-  distMatSvc = new google.maps.DistanceMatrixService();
-  people.forEach(p => { const el = document.getElementById('addr-' + p.id); if (el) p.addrText = el.value; });
-  renderPeopleRows();
-  if (window._pendingURLLoad) { loadFromURL(); window._pendingURLLoad = false; }
-}
-
-function checkShowInvite() {
-  const filled = people.filter(p => {
-    const el = document.getElementById('addr-' + p.id);
-    return el && el.value.trim();
-  }).length;
-  document.getElementById('share-invite-btn').style.display = filled >= 1 ? 'block' : 'none';
-}
-
-function getGPS(id) {
-  if (!navigator.geolocation) { setError('Geolocation not supported.'); return; }
-  setStatus('Getting your location...');
-  navigator.geolocation.getCurrentPosition(pos => {
-    const latlng = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-    geocoder.geocode({ location: latlng }, (results, status) => {
-      setStatus('');
-      if (status === 'OK' && results[0]) {
-        const person = people.find(p => p.id === id);
-        if (person) {
-          document.getElementById('addr-' + id).value = results[0].formatted_address;
-          person.addrText = results[0].formatted_address;
-          person.resolvedLoc = results[0].geometry.location;
-        }
-      }
-    });
-  }, () => { setStatus(''); setError('Could not get GPS location.'); });
-}
-
-function geocodeAddr(addr) {
-  return new Promise((resolve, reject) => {
-    geocoder.geocode({ address: addr }, (results, status) => {
-      if (status === 'OK') resolve(results[0].geometry.location);
-      else reject('Could not find: ' + addr);
-    });
-  });
-}
-
-function getCentroid(locs) {
-  const lat = locs.reduce((s, l) => s + l.lat(), 0) / locs.length;
-  const lng = locs.reduce((s, l) => s + l.lng(), 0) / locs.length;
-  return new google.maps.LatLng(lat, lng);
-}
-
-function interpolate(l1, l2, t) {
-  return new google.maps.LatLng(
-    l1.lat() + (l2.lat() - l1.lat()) * t,
-    l1.lng() + (l2.lng() - l1.lng()) * t
-  );
-}
-
-function searchNearby(center, types, maxPerType) {
-  const searches = types.map(type => new Promise(resolve => {
-    placesService.nearbySearch({ location: center, radius: 5000, type }, (results, status) => {
-      resolve(status === 'OK' ? results.slice(0, maxPerType) : []);
-    });
-  }));
-  return Promise.all(searches).then(all => {
-    const seen = new Set();
-    return all.flat().filter(p => {
-      if (seen.has(p.place_id)) return false;
-      seen.add(p.place_id); return true;
-    });
-  });
-}
-
-function getTravelTime(origin, dest, mode) {
-  return new Promise((resolve, reject) => {
-    distMatSvc.getDistanceMatrix({
-      origins: [origin], destinations: [dest],
-      travelMode: google.maps.TravelMode[mode],
-    }, (res, status) => {
-      if (status === 'REQUEST_DENIED') reject('Distance Matrix API access denied. Please enable it in Google Cloud Console.');
-      else if (status === 'OK') {
-        const el = res.rows[0].elements[0];
-        resolve(el.status === 'OK' ? el.duration.value : 999999);
-      } else resolve(999999);
-    });
-  });
-}
-
-function getPlaceLabel(types) {
-  const map = { bar: 'Bar', night_club: 'Club', restaurant: 'Restaurant', cafe: 'Cafe', park: 'Park', movie_theater: 'Cinema', food: 'Restaurant', bakery: 'Cafe' };
-  for (const t of (types || [])) if (map[t]) return map[t];
-  return 'Place';
-}
-
-function fetchPlaceDetails(placeId) {
-  return new Promise((resolve, reject) => {
-    const dummy = document.createElement('div');
-    const svc = new google.maps.places.PlacesService(dummy);
-    svc.getDetails({
-      placeId,
-      fields: ['name', 'formatted_address', 'formatted_phone_number', 'website',
-               'rating', 'reviews', 'photos', 'opening_hours', 'url', 'user_ratings_total',
-               'reservable', 'serves_dinner', 'serves_lunch']
-    }, (place, status) => {
-      if (status === 'OK') resolve(place);
-      else reject(status);
-    });
-  });
-}
-
-function starsHTML(r) {
-  let s = '';
-  for (let i = 0; i < 5; i++) s += i < Math.round(r) ? '★' : '☆';
-  return s;
-}
-function clearMarkers() { markers.forEach(m => m.setMap(null)); markers = []; }
-
-async function doSearch() {
-  setError('');
-  const count = parseInt(document.getElementById('count-slider').value);
-  const addrs = people.map(p => document.getElementById('addr-' + p.id).value.trim());
-
-  if (people.length < 2) { setError('Please add at least two people.'); return; }
-  if (addrs.some(a => !a)) { setError('Please enter an address for everyone.'); return; }
-
-  document.getElementById('search-btn').disabled = true;
-  document.getElementById('results-list').style.display = 'none';
-  document.getElementById('map').style.display = 'none';
-  document.getElementById('reset-btn').style.display = 'none';
-  setStatus('Finding locations...');
-
-  try {
-    const locs = await Promise.all(people.map((p, i) =>
-      p.resolvedLoc ? Promise.resolve(p.resolvedLoc) : geocodeAddr(addrs[i])
-    ));
-    locs.forEach((loc, i) => { people[i].resolvedLoc = loc; });
-
-    const centroid = getCentroid(locs);
-    const mapEl = document.getElementById('map');
-    mapEl.style.display = 'block';
-
-    if (!map) {
-      map = new google.maps.Map(mapEl, { zoom: 12, center: centroid, disableDefaultUI: true, zoomControl: true });
-      await new Promise(resolve => google.maps.event.addListenerOnce(map, 'idle', resolve));
-      placesService = new google.maps.places.PlacesService(map);
-    } else {
-      map.setCenter(centroid);
-    }
-
-    clearMarkers();
-    locs.forEach((loc, i) => {
-      const col = COLORS[i];
-      markers.push(new google.maps.Marker({
-        position: loc, map,
-        label: { text: LABELS[i], color: col.fg, fontWeight: '600' }
-      }));
-    });
-
-    setStatus('Finding nearby places...');
-    const types = getSelectedTypes();
-    const searchPoints = [centroid, ...locs.map(l => interpolate(l, centroid, 0.5))];
-    const searchResults = await Promise.allSettled(searchPoints.map(pt => searchNearby(pt, types, 15)));
-
-    const selectedTypes = getSelectedTypes();
-    const EXCLUDE_CHAINS = new Set([
-      "McDonald's","McDonalds","Burger King","KFC","Wendy's","Subway","Taco Bell",
-      "Pizza Hut","Domino's","Domino's Pizza","Papa John's","Five Guys","Shake Shack",
-      "Popeyes","Chick-fil-A","Dunkin'","Dunkin' Donuts","Tim Hortons","Panda Express",
-      "Chipotle","Chipotle Mexican Grill","Wingstop","Buffalo Wild Wings","Little Caesars",
-      "Church's Chicken","Sonic","Arby's","Hardee's","Carl's Jr.","Jack in the Box",
-      "White Castle","Checkers","Rally's","Del Taco","Raising Cane's","Zaxby's","Culver's",
-      "In-N-Out Burger","In-N-Out","Whataburger","Jersey Mike's","Jimmy John's","Quiznos",
-      "Sbarro","Pollo Tropical","Firehouse Subs","Greggs","Pret A Manger","Pret",
-      "Costa","Costa Coffee","Caffe Nero","Nero","Starbucks","Krispy Kreme",
-      "Nando's","Nandos","Pizza Express","Wagamama","Yo! Sushi","Yo Sushi",
-      "Leon","Itsu","Wasabi","Tortilla","Gourmet Burger Kitchen","GBK",
-      "Byron","Honest Burgers","Shake Shack","Five Guys","Wimpy",
-      "Harry Ramsden's","Harry Ramsdens","Fisherman's","The Codfather"
-    ]);
-    const filterUnwanted = selectedTypes.includes('restaurant') || selectedTypes.includes('cafe');
-    const seen = new Set();
-    const allCandidates = searchResults.flatMap(r => r.value || []).filter(p => {
-      if (seen.has(p.place_id)) return false;
-      seen.add(p.place_id);
-      if (filterUnwanted) {
-        const t = p.types || [];
-        // Exclude by Google type tags
-        if (t.includes('meal_takeaway') || t.includes('meal_delivery')) return false;
-        // Exclude known chains regardless of how Google tags them
-        if (EXCLUDE_CHAINS.has(p.name)) return false;
-      }
-      return true;
-    });
-
-    if (allCandidates.length === 0) throw 'No places found nearby. Try a different place type.';
-
-    setStatus('Calculating travel times for ' + allCandidates.length + ' places...');
-
-    const scored = await Promise.all(allCandidates.map(async place => {
-      const ploc = place.geometry.location;
-      const times = await Promise.all(locs.map(loc => getTravelTime(loc, ploc, travelMode)));
-      const maxT = Math.max(...times);
-      const minT = Math.min(...times);
-      return { place, times, fairness: maxT - minT, total: times.reduce((s, t) => s + t, 0), maxT };
-    }));
-
-    scored.sort((a, b) => {
-      const bandA = Math.floor(a.maxT / 60 / 10);
-      const bandB = Math.floor(b.maxT / 60 / 10);
-      if (bandA !== bandB) return bandA - bandB;
-      return a.fairness - b.fairness;
-    });
-
-    // Cap at however many valid results exist — don't pad with poor matches
-    const top = scored.slice(0, Math.min(count, scored.length));
-    if (top.length === 0) throw 'No suitable places found. Try a different type or area.';
-    lastResults = top;
-    setStatus('');
-
-    const listEl = document.getElementById('results-list');
-    listEl.innerHTML = '';
-    listEl.style.display = 'block';
-
-    top.forEach((item, i) => {
-      const { place, times } = item;
-      markers.push(new google.maps.Marker({
-        position: place.geometry.location, map,
-        label: { text: String(i + 1), color: '#fff', fontWeight: '600', fontSize: '12px' }
-      }));
-      const timeChips = times.map((t, pi) => {
-        const col = COLORS[pi];
-        return `<span class="tchip" style="background:${col.bg};color:${col.fg}">${LABELS[pi]}: ${Math.round(t / 60)} min</span>`;
-      }).join('');
-      const card = document.createElement('div');
-      card.className = 'result-card';
-      const expandId = 'expand-' + i;
-      card.innerHTML = `
-        <div class="result-name">${i + 1}. ${place.name}</div>
-        <div class="result-addr">${place.vicinity || ''}</div>
-        <div class="travel-chips">${timeChips}<span class="tchip ptype">${getPlaceLabel(place.types)}</span></div>
-        ${place.rating ? `<div class="rating-row"><span class="stars">${starsHTML(place.rating)}</span><span class="rating-num">${place.rating.toFixed(1)}</span></div>` : ''}
-        <div class="tap-hint" id="hint-${i}">Tap for details &rsaquo;</div>
-        <div class="card-expand" id="${expandId}"></div>
-      `;
-      let expanded = false;
-      let loaded = false;
-      card.addEventListener('click', () => {
-        expanded = !expanded;
-        const expandEl = document.getElementById(expandId);
-        const hintEl = document.getElementById('hint-' + i);
-        if (expanded) {
-          expandEl.classList.add('open');
-          hintEl.style.display = 'none';
-          card.classList.add('active');
-          // Zoom map
-          if (map) { map.panTo(place.geometry.location); map.setZoom(16); }
-          card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-          if (!loaded) {
-            loaded = true;
-            expandEl.innerHTML = '<div class="expand-loading">Loading...</div>';
-            fetchPlaceDetails(place.place_id).then(details => {
-              const photosHTML = details.photos && details.photos.length
-                ? `<div class="expand-photos">${details.photos.slice(0, 6).map(p =>
-                    `<img class="expand-photo" src="${p.getUrl({ maxWidth: 300, maxHeight: 200 })}" loading="lazy" />`
-                  ).join('')}</div>`
-                : '';
-              const hoursHTML = details.opening_hours
-                ? `<div class="expand-hours" style="color:${details.opening_hours.isOpen() ? '#1a6b3a' : '#b33'}">${details.opening_hours.isOpen() ? 'Open now' : 'Closed now'}</div>`
-                : '';
-              const mapsUrl = details.url || 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(details.name);
-              // Show reserve button only if Google's reservable field is true, or website contains booking keywords
-              const bookingKeywords = ['resy.com','opentable.com','sevenrooms.com','tock.com','yelp.com/reservations','book','reserve'];
-              const websiteIsBooking = details.website && bookingKeywords.some(k => details.website.toLowerCase().includes(k));
-              const showReserve = details.reservable || websiteIsBooking;
-              const reserveUrl = websiteIsBooking ? details.website : (details.url ? details.url : mapsUrl);
-              const actionsHTML = `<div class="expand-actions">
-                <a class="expand-action primary" href="${mapsUrl}" target="_blank">Open in Maps</a>
-                ${showReserve ? `<a class="expand-action" style="background:#b5451b;color:#fff;border-color:transparent" href="${reserveUrl}" target="_blank">Reserve</a>` : ''}
-                ${!websiteIsBooking && details.website ? `<a class="expand-action" href="${details.website}" target="_blank">Book</a>` : ''}
-                ${details.formatted_phone_number ? `<a class="expand-action" href="tel:${details.formatted_phone_number}">Call</a>` : ''}
-              </div>`;
-              const reviewsLinkHTML = details.url
-                ? `<a class="expand-reviews-link" href="${details.url}" target="_blank">See all reviews on Google &rsaquo;</a>`
-                : '';
-              expandEl.innerHTML = hoursHTML + actionsHTML + photosHTML + reviewsLinkHTML;
-            }).catch(() => {
-              expandEl.innerHTML = '<div class="expand-loading">Could not load details.</div>';
-            });
-          }
-        } else {
-          expandEl.classList.remove('open');
-          hintEl.style.display = '';
-          card.classList.remove('active');
-        }
-      });
-      listEl.appendChild(card);
-    });
-
-    const bounds = new google.maps.LatLngBounds();
-    markers.forEach(m => bounds.extend(m.getPosition()));
-    map.fitBounds(bounds);
-    document.getElementById('reset-btn').style.display = 'block';
-    document.getElementById('share-results-btn').style.display = 'block';
-
-  } catch (err) {
-    setStatus('');
-    setError(typeof err === 'string' ? err : (err.message || 'Something went wrong. Check your addresses and try again.'));
-  }
-  document.getElementById('search-btn').disabled = false;
-}
-
-function resetApp() {
-  people = []; nextId = 0;
-  addPerson(); addPerson();
-loadFromURL();
-
-// ── URL pre-fill ─────────────────────────────────────────────────────────────
-function loadFromURL() {
-  const params = new URLSearchParams(window.location.search);
-  const addrs = [];
-  for (let i = 0; i < 5; i++) {
-    const a = params.get('p' + i);
-    if (a) addrs.push(decodeURIComponent(a));
-  }
-  if (addrs.length === 0) return;
-
-  // We need more people rows if more than 2 addresses
-  while (people.length < Math.max(2, addrs.length + 1)) addPerson();
-
-  // Fill known addresses and lock them (they came from the link)
-  addrs.forEach((addr, i) => {
-    people[i].addrText = addr;
-    people[i].resolvedLoc = null; // will geocode on search
-  });
-
-  // Re-render so inputs show the values
-  if (window.google && window.google.maps) {
-    renderPeopleRows();
-  } else {
-    // Will be handled after initMap fires
-    window._pendingURLLoad = true;
-  }
-}
-
-// ── Share invite (pre-fills known addresses for next person) ─────────────────
-function shareInvite() {
-  const filled = people
-    .map((p, i) => ({ addr: document.getElementById('addr-' + p.id)?.value.trim(), i }))
-    .filter(x => x.addr);
-
-  if (filled.length === 0) { showToast('Enter at least one address first'); return; }
-
-  const params = new URLSearchParams();
-  filled.forEach(x => params.set('p' + x.i, encodeURIComponent(x.addr)));
-  const url = window.location.origin + window.location.pathname + '?' + params.toString();
-
-  const nextPerson = String.fromCharCode(65 + filled.length); // A, B, C...
-  const msg = `I'm using Midcamino to find a fair meetup spot — tap to add your location as Person ${nextPerson}: ${url}`;
-
-  if (navigator.share) {
-    navigator.share({ title: 'Midcamino', text: msg, url }).catch(() => copyToClipboard(url));
-  } else {
-    copyToClipboard(msg);
-  }
-}
-
-// ── Share results ─────────────────────────────────────────────────────────────
-let lastResults = [];
-
-function shareResults() {
-  if (lastResults.length === 0) { showToast('No results to share yet'); return; }
-
-  const top = lastResults[0];
-  const times = top.times.map((t, i) => `${String.fromCharCode(65+i)}: ${Math.round(t/60)} min`).join(', ');
-  const msg = `📍 Midcamino suggests: ${top.place.name} — ${top.place.vicinity || ''}
-${times}
-
-Find your own midpoint: ${window.location.origin}`;
-
-  if (navigator.share) {
-    navigator.share({ title: 'Midcamino results', text: msg }).catch(() => copyToClipboard(msg));
-  } else {
-    copyToClipboard(msg);
-  }
-}
-
-function copyToClipboard(text) {
-  navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard!')).catch(() => showToast('Could not copy — try manually'));
-}
-
-function showToast(msg) {
-  const t = document.getElementById('share-toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
-}
-  document.getElementById('results-list').style.display = 'none';
-  document.getElementById('map').style.display = 'none';
-  document.getElementById('reset-btn').style.display = 'none';
-  document.getElementById('share-results-btn').style.display = 'none';
-  document.getElementById('share-invite-btn').style.display = 'none';
-  lastResults = [];
-  setStatus(''); setError('');
-  clearMarkers();
-}
-
-addPerson(); addPerson();
-loadFromURL();
-
-// ── URL pre-fill ─────────────────────────────────────────────────────────────
-function loadFromURL() {
-  const params = new URLSearchParams(window.location.search);
-  const addrs = [];
-  for (let i = 0; i < 5; i++) {
-    const a = params.get('p' + i);
-    if (a) addrs.push(decodeURIComponent(a));
-  }
-  if (addrs.length === 0) return;
-
-  // We need more people rows if more than 2 addresses
-  while (people.length < Math.max(2, addrs.length + 1)) addPerson();
-
-  // Fill known addresses and lock them (they came from the link)
-  addrs.forEach((addr, i) => {
-    people[i].addrText = addr;
-    people[i].resolvedLoc = null; // will geocode on search
-  });
-
-  // Re-render so inputs show the values
-  if (window.google && window.google.maps) {
-    renderPeopleRows();
-  } else {
-    // Will be handled after initMap fires
-    window._pendingURLLoad = true;
-  }
-}
-
-// ── Share invite (pre-fills known addresses for next person) ─────────────────
-function shareInvite() {
-  const filled = people
-    .map((p, i) => ({ addr: document.getElementById('addr-' + p.id)?.value.trim(), i }))
-    .filter(x => x.addr);
-
-  if (filled.length === 0) { showToast('Enter at least one address first'); return; }
-
-  const params = new URLSearchParams();
-  filled.forEach(x => params.set('p' + x.i, encodeURIComponent(x.addr)));
-  const url = window.location.origin + window.location.pathname + '?' + params.toString();
-
-  const nextPerson = String.fromCharCode(65 + filled.length); // A, B, C...
-  const msg = `I'm using Midcamino to find a fair meetup spot — tap to add your location as Person ${nextPerson}: ${url}`;
-
-  if (navigator.share) {
-    navigator.share({ title: 'Midcamino', text: msg, url }).catch(() => copyToClipboard(url));
-  } else {
-    copyToClipboard(msg);
-  }
-}
-
-// ── Share results ─────────────────────────────────────────────────────────────
-let lastResults = [];
-
-function shareResults() {
-  if (lastResults.length === 0) { showToast('No results to share yet'); return; }
-
-  const top = lastResults[0];
-  const times = top.times.map((t, i) => `${String.fromCharCode(65+i)}: ${Math.round(t/60)} min`).join(', ');
-  const msg = `📍 Midcamino suggests: ${top.place.name} — ${top.place.vicinity || ''}
-${times}
-
-Find your own midpoint: ${window.location.origin}`;
-
-  if (navigator.share) {
-    navigator.share({ title: 'Midcamino results', text: msg }).catch(() => copyToClipboard(msg));
-  } else {
-    copyToClipboard(msg);
-  }
-}
-
-function copyToClipboard(text) {
-  navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard!')).catch(() => showToast('Could not copy — try manually'));
-}
-
-function showToast(msg) {
-  const t = document.getElementById('share-toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
-}
-</script>
-
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCLqZ8CEafy_1_UZgYa-DeDUTI96p9DKHU&v=3.55&libraries=places,geometry&callback=initMap" async defer></script>
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {});
-  });
-}
-</script>
-</body>
-</html>
-<script>
-// ── Supabase session logic ────────────────────────────────────────────────────
 const SUPA_URL = 'https://spwsrsbrewpribrxdqpx.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNwd3Nyc2JyZXdwcmlicnhkcXB4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzODEyMDYsImV4cCI6MjA5NDk1NzIwNn0.lg1lLAotii_H3jGcenwHtsIVnDu3dbHVoNSSVsRwPxQ';
-const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
-
-let currentSession = null;   // { code, id }
-let sessionChannel = null;   // realtime channel
-let mySlot = -1;             // which person slot I own in this session
-
-function generateCode() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  return Array.from({length: 6}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-}
-
-function toggleJoinBar() {
-  const bar = document.getElementById('session-join-bar');
-  const btn = document.getElementById('start-session-btn');
-  const visible = bar.style.display === 'block';
-  bar.style.display = visible ? 'none' : 'block';
-  btn.textContent = visible ? '👥 Plan with a group — share one link' : '✕ Cancel';
-  if (!visible) document.getElementById('session-code-input').focus();
-}
-
-async function startSession() {
-  const code = generateCode();
-  const myAddr = document.getElementById('addr-' + people[0].id)?.value.trim() || '';
-  const addresses = [{ slot: 0, addr: myAddr, label: 'A' }];
-
-  const { data, error } = await supa.from('sessions').insert({
-    code,
-    addresses: JSON.stringify(addresses)
-  }).select().single();
-
-  if (error) { showToast('Could not create session'); console.error(error); return; }
-
-  currentSession = { code, id: data.id };
-  mySlot = 0;
-  showSessionBar(code, addresses);
-  subscribeToSession(data.id);
-  showToast('Session started!');
-}
-
-async function joinSession() {
-  const code = document.getElementById('session-code-input').value.trim().toUpperCase();
-  if (code.length < 6) { showToast('Please enter the full 6-character code'); return; }
-
-  const { data, error } = await supa.from('sessions').select('*').eq('code', code).single();
-  if (error || !data) { showToast('Session not found — check the code'); return; }
-
-  const addresses = JSON.parse(data.addresses || '[]');
-  const takenSlots = addresses.map(a => a.slot);
-  mySlot = 0;
-  while (takenSlots.includes(mySlot)) mySlot++;
-
-  if (mySlot >= 5) { showToast('Session is full (max 5 people)'); return; }
-
-  // Add my slot to addresses
-  const myAddr = document.getElementById('addr-' + (people[mySlot] || people[people.length-1]).id)?.value.trim() || '';
-  addresses.push({ slot: mySlot, addr: myAddr, label: LABELS[mySlot] });
-
-  await supa.from('sessions').update({ addresses: JSON.stringify(addresses) }).eq('id', data.id);
-
-  currentSession = { code, id: data.id };
-
-  // Ensure enough person rows
-  while (people.length <= mySlot) addPerson();
-
-  // Fill in existing addresses
-  addresses.forEach(a => {
-    if (a.slot < people.length && a.addr) {
-      const input = document.getElementById('addr-' + people[a.slot].id);
-      if (input) { input.value = a.addr; people[a.slot].addrText = a.addr; }
-    }
-  });
-
-  document.getElementById('session-join-bar').style.display = 'none';
-  document.getElementById('start-session-btn').style.display = 'none';
-  showSessionBar(code, addresses);
-  subscribeToSession(data.id);
-  showToast('Joined session!');
-}
-
-function subscribeToSession(sessionId) {
-  if (sessionChannel) supa.removeChannel(sessionChannel);
-  sessionChannel = supa.channel('session-' + sessionId)
-    .on('postgres_changes', {
-      event: 'UPDATE', schema: 'public', table: 'sessions', filter: `id=eq.${sessionId}`
-    }, payload => {
-      const addresses = JSON.parse(payload.new.addresses || '[]');
-      updateSessionUI(addresses);
-      // Fill in any new addresses other people added
-      addresses.forEach(a => {
-        if (a.slot !== mySlot && a.addr) {
-          while (people.length <= a.slot) addPerson();
-          const input = document.getElementById('addr-' + people[a.slot].id);
-          if (input && !input.value.trim()) {
-            input.value = a.addr;
-            people[a.slot].addrText = a.addr;
-            people[a.slot].resolvedLoc = null;
-          }
-        }
-      });
-      // Show toast when someone joins
-      const myCount = JSON.parse(payload.old?.addresses || '[]').length;
-      if (addresses.length > myCount) {
-        const newcomer = addresses[addresses.length - 1];
-        showToast(`Person ${newcomer.label} has joined! 👋`);
-      }
-    })
-    .subscribe();
-}
-
-function showSessionBar(code, addresses) {
-  document.getElementById('session-bar').style.display = 'block';
-  document.getElementById('session-code-display').textContent = code;
-  updateSessionUI(addresses);
-}
-
-function updateSessionUI(addresses) {
-  const el = document.getElementById('session-members');
-  if (addresses.length === 0) {
-    el.textContent = 'Waiting for others to join…';
-  } else {
-    const joined = addresses.map(a => `<span class="session-member">${a.label}${a.addr ? ' ✓' : ''}</span>`).join('');
-    el.innerHTML = `<strong>${addresses.length}</strong> ${addresses.length === 1 ? 'person' : 'people'} in session: ${joined}`;
-  }
-}
-
-async function updateMyAddress() {
-  if (!currentSession || mySlot < 0) return;
-  const myAddr = document.getElementById('addr-' + people[mySlot]?.id)?.value.trim() || '';
-  const { data } = await supa.from('sessions').select('addresses').eq('id', currentSession.id).single();
-  const addresses = JSON.parse(data?.addresses || '[]');
-  const mine = addresses.find(a => a.slot === mySlot);
-  if (mine) mine.addr = myAddr;
-  await supa.from('sessions').update({ addresses: JSON.stringify(addresses) }).eq('id', currentSession.id);
-}
-
-function copySessionLink() {
-  if (!currentSession) return;
-  const url = window.location.origin + window.location.pathname + '?session=' + currentSession.code;
-  const msg = `Join my Midcamino session to find a fair meetup spot! Tap the link and add your location: ${url}`;
-  if (navigator.share) {
-    navigator.share({ title: 'Midcamino', text: msg, url }).catch(() => copyToClipboard(msg));
-  } else {
-    copyToClipboard(msg);
-  }
-}
-
-async function leaveSession() {
-  if (sessionChannel) { supa.removeChannel(sessionChannel); sessionChannel = null; }
-  currentSession = null; mySlot = -1;
-  document.getElementById('session-bar').style.display = 'none';
-  document.getElementById('start-session-btn').style.display = 'block';
-  showToast('Left session');
-}
-
-// Check URL for session code on load
-async function checkSessionFromURL() {
-  const params = new URLSearchParams(window.location.search);
-  const code = params.get('session');
-  if (!code) return;
-  // Pre-fill the join input and trigger join
-  document.getElementById('session-code-input').value = code.toUpperCase();
-  document.getElementById('session-join-bar').style.display = 'block';
-  document.getElementById('start-session-btn').textContent = '✕ Cancel';
-  showToast('Tap Join to enter the session');
-}
-
-// Wire up: update session when my address changes
-const _origAttach = attachAutocomplete;
-attachAutocomplete = function(person) {
-  _origAttach(person);
-  const input = document.getElementById('addr-' + person.id);
-  if (input) {
-    input.addEventListener('change', () => {
-      if (currentSession && people.indexOf(person) === mySlot) updateMyAddress();
-    });
-  }
+const MAX_PEOPLE = 5;
+const MAX_RESULTS = 8;
+const COLORS = ['#b5451b', '#1f7a72', '#4a4fb3', '#a87800', '#9b3d7a'];
+const MODES = {
+  DRIVING:   { label: 'Drive',   dir: 'driving',   icon: '<path d="M5 17h14M6 17v2M18 17v2M4 13l2-5.5A2 2 0 0 1 7.9 6h8.2a2 2 0 0 1 1.9 1.5L20 13v4H4z"/><circle cx="8" cy="13.5" r="1"/><circle cx="16" cy="13.5" r="1"/>' },
+  TRANSIT:   { label: 'Transit', dir: 'transit',   icon: '<rect x="6" y="3" width="12" height="14" rx="3"/><path d="M6 11h12M9 21l1.5-4M15 21l-1.5-4"/><circle cx="9" cy="14" r=".8"/><circle cx="15" cy="14" r=".8"/>' },
+  WALKING:   { label: 'Walk',    dir: 'walking',   icon: '<circle cx="13" cy="4.5" r="1.8"/><path d="M10 21l2-6 3 3v3M9 12l2-4 3 1 2 3M11 8l-2 6"/>' },
+  BICYCLING: { label: 'Cycle',   dir: 'bicycling', icon: '<circle cx="6" cy="16" r="3.5"/><circle cx="18" cy="16" r="3.5"/><path d="M6 16l4-7h5l3 7M10 9l3 7M14 5h2"/>' },
+};
+const TYPES = [['bar', 'Bars'], ['restaurant', 'Restaurants'], ['cafe', 'Cafés'], ['park', 'Parks'], ['movie_theater', 'Cinemas'], ['night_club', 'Clubs']];
+const TYPE_LABEL = { bar: 'Bar', night_club: 'Club', restaurant: 'Restaurant', cafe: 'Café', park: 'Park', movie_theater: 'Cinema', bakery: 'Café', food: 'Restaurant' };
+const EXCLUDE_CHAINS = new Set([
+  "McDonald's","McDonalds","Burger King","KFC","Wendy's","Subway","Taco Bell","Pizza Hut","Domino's","Domino's Pizza","Papa John's",
+  "Five Guys","Shake Shack","Popeyes","Popeyes Louisiana Kitchen","Chick-fil-A","Dunkin'","Dunkin' Donuts","Dunkin","Tim Hortons","Panda Express",
+  "Chipotle","Chipotle Mexican Grill","Wingstop","Buffalo Wild Wings","Little Caesars","Little Caesars Pizza","Church's Chicken","Sonic","Sonic Drive-In",
+  "Arby's","Hardee's","Carl's Jr.","Jack in the Box","White Castle","Checkers","Rally's","Del Taco","Raising Cane's","Raising Cane's Chicken Fingers",
+  "Zaxby's","Culver's","In-N-Out Burger","In-N-Out","Whataburger","Jersey Mike's","Jersey Mike's Subs","Jimmy John's","Quiznos","Sbarro","Pollo Tropical",
+  "Firehouse Subs","Greggs","Pret A Manger","Pret","Costa","Costa Coffee","Caffe Nero","Nero","Starbucks","Krispy Kreme","Nando's","Nandos",
+  "Pizza Express","Wagamama","Yo! Sushi","Yo Sushi","Leon","Itsu","Wasabi","Tortilla","Gourmet Burger Kitchen","GBK","Byron","Honest Burgers","Wimpy",
+  "Harry Ramsden's","Harry Ramsdens","Fisherman's","The Codfather","Apache Pizza","Supermac's","Insomnia","Insomnia Coffee Company","Abrakebabra"
+]);
+const ICON = {
+  gps: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>',
+  x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
 };
 
-// Replace the start-session-btn to either start or show join bar
-document.getElementById('start-session-btn').addEventListener('click', function(e) {
-  e.stopPropagation();
+// ───────────────────────── helpers ─────────────────────────
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const mins = s => Math.max(1, Math.round(s / 60));
+const store = {
+  get(k, d) { try { const v = localStorage.getItem('mc_' + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem('mc_' + k, JSON.stringify(v)); } catch {} },
+  del(k) { try { localStorage.removeItem('mc_' + k); } catch {} },
+};
+const CLIENT_ID = store.get('cid') || (() => {
+  const id = (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
+  store.set('cid', id); return id;
+})();
+let toastTimer;
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+}
+function showLoading(msg) { $('#loading-msg').textContent = msg; $('#loading').hidden = false; }
+function setLoading(msg) { $('#loading-msg').textContent = msg; }
+function hideLoading() { $('#loading').hidden = true; }
+function haversine(a, b) {
+  const R = 6371, r = x => x * Math.PI / 180;
+  const dLat = r(b.lat - a.lat), dLng = r(b.lng - a.lng);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(r(a.lat)) * Math.cos(r(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
+function openModal(id) { $(id).hidden = false; const f = $(id).querySelector('input'); if (f) setTimeout(() => f.focus(), 60); }
+function closeModal(id) { $(id).hidden = true; }
+document.querySelectorAll('.modal').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m || e.target.closest('[data-close]')) m.hidden = true; });
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.modal').forEach(m => m.hidden = true); });
+
+// ───────────────────────── state ─────────────────────────
+let supa = null;
+try { supa = window.supabase.createClient(SUPA_URL, SUPA_KEY); } catch (e) { console.warn('Supabase unavailable', e); }
+
+const S = {
+  people: [],          // { key, id?, slot, name, address, lat, lng, owner }
+  mySlot: 0,
+  mode: store.get('mode', 'DRIVING'),
+  types: store.get('types', ['bar']),
+  results: null,       // { at, by, sig, mode, people:[{slot,name}], spots:[...] }
+  chosen: null,        // { id, name, by }
+  session: null,       // { id, code }
+  sessionState: {},
+  channel: null,
+};
+let localSeq = 0;
+let G = null;          // google services once loaded
+let map = null, mapMarkers = [], placeMarkers = new Map();
+
+const myName = () => store.get('name', '');
+const isMine = p => p.owner === CLIENT_ID;
+const isSelf = p => isMine(p) && p.slot === S.mySlot;
+function nameOf(slot, fallbackName) {
+  if (slot === S.mySlot && (!S.session || S.people.some(p => p.slot === slot && isMine(p)))) return 'You';
+  const p = S.people.find(x => x.slot === slot);
+  return (p && p.name) || fallbackName || 'Person ' + (slot + 1);
+}
+function hasLoc(p) { return typeof p.lat === 'number' && typeof p.lng === 'number'; }
+function readyPeople() { return S.people.filter(p => p.address.trim()); }
+function signature() {
+  return readyPeople().map(p => p.slot + ':' + (hasLoc(p) ? p.lat.toFixed(4) + ',' + p.lng.toFixed(4) : p.address.trim().toLowerCase())).sort().join('|') + '|' + S.mode + '|' + [...S.types].sort().join(',');
+}
+function nextFreeSlot(taken) { for (let i = 0; i < MAX_PEOPLE; i++) if (!taken.includes(i)) return i; return -1; }
+
+// ───────────────────────── plan screen: people ─────────────────────────
+function localPerson(slot, extra = {}) {
+  return { key: 'l' + (localSeq++), slot, name: '', address: '', lat: null, lng: null, owner: CLIENT_ID, ...extra };
+}
+
+function renderPeople() {
+  const ul = $('#people');
+  const keys = new Set(S.people.map(p => p.key));
+  [...ul.children].forEach(li => { if (!keys.has(li.dataset.key)) li.remove(); });
+  S.people.sort((a, b) => a.slot - b.slot).forEach(p => {
+    let li = ul.querySelector(`[data-key="${CSS.escape(p.key)}"]`);
+    if (!li || li.dataset.editable !== String(isMine(p))) { if (li) li.remove(); li = buildRow(p); }
+    ul.appendChild(li);
+    updateRow(li, p);
+  });
+  $('#add-btn').hidden = S.people.length >= MAX_PEOPLE;
+  updateFindButton();
+  updateInvite();
+}
+
+function buildRow(p) {
+  const li = document.createElement('li');
+  li.className = 'person';
+  li.dataset.key = p.key;
+  li.dataset.editable = String(isMine(p));
+  if (isMine(p)) {
+    const self = isSelf(p);
+    li.innerHTML = `
+      <span class="dot" aria-hidden="true"></span>
+      <div class="person-main">
+        ${self ? '<span class="person-name">You</span>' : '<input class="person-name" maxlength="24" placeholder="Add a name (optional)" aria-label="Name" />'}
+        <div class="field">
+          <input class="addr" autocomplete="off" placeholder="${self ? 'Where are you coming from?' : 'Where are they coming from?'}" aria-label="${self ? 'Your starting point' : 'Their starting point'}" />
+          <button class="field-btn gps" type="button" aria-label="Use my current location">${ICON.gps}</button>
+        </div>
+      </div>
+      ${self ? '' : `<button class="remove" type="button" aria-label="Remove this person">${ICON.x}</button>`}`;
+    const addr = li.querySelector('.addr');
+    addr.addEventListener('input', () => {
+      p.address = addr.value; p.lat = p.lng = null;
+      addr.classList.remove('is-set'); updateFindButton(); updateInvite();
+    });
+    addr.addEventListener('change', () => resolveTyped(p, addr));
+    addr.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addr.blur(); } });
+    li.querySelector('.gps').addEventListener('click', () => useGPS(p, addr));
+    const nm = li.querySelector('input.person-name');
+    if (nm) nm.addEventListener('change', () => { p.name = nm.value.trim(); commit(p); });
+    const rm = li.querySelector('.remove');
+    if (rm) rm.addEventListener('click', () => removePerson(p));
+    attachAutocomplete(addr, place => {
+      if (!place.geometry) return;
+      p.address = addr.value; p.lat = place.geometry.location.lat(); p.lng = place.geometry.location.lng();
+      addr.classList.add('is-set'); commit(p); updateFindButton();
+    });
+  } else {
+    li.innerHTML = `
+      <span class="dot" aria-hidden="true"></span>
+      <div class="person-main"><span class="person-name"></span><div class="readonly"></div></div>`;
+  }
+  return li;
+}
+
+function updateRow(li, p) {
+  const dot = li.querySelector('.dot');
+  dot.style.setProperty('--c', COLORS[p.slot % COLORS.length]);
+  const label = isSelf(p) ? (myName() || 'You') : (p.name || '');
+  dot.textContent = (label.trim()[0] || String(p.slot + 1)).toUpperCase();
+  if (isMine(p)) {
+    const addr = li.querySelector('.addr');
+    if (document.activeElement !== addr && addr.value !== p.address) addr.value = p.address;
+    addr.classList.toggle('is-set', hasLoc(p) && !!p.address);
+    const nm = li.querySelector('input.person-name');
+    if (nm && document.activeElement !== nm) nm.value = p.name;
+  } else {
+    li.querySelector('.person-name').textContent = p.name || 'Someone';
+    const ro = li.querySelector('.readonly');
+    ro.textContent = p.address || 'Adding where they’re coming from';
+    ro.classList.toggle('waiting', !p.address);
+  }
+}
+
+async function addPerson() {
+  if (S.people.length >= MAX_PEOPLE) return;
+  if (S.session) {
+    const row = await insertParticipant({ name: '', address: '' });
+    if (!row) return;
+    upsertPersonFromRow(row); renderPeople();
+  } else {
+    S.people.push(localPerson(nextFreeSlot(S.people.map(p => p.slot))));
+    renderPeople();
+  }
+  const rows = $('#people').querySelectorAll('.person');
+  const last = rows[rows.length - 1]; const inp = last && last.querySelector('.addr');
+  if (inp) inp.focus();
+}
+
+async function removePerson(p) {
+  S.people = S.people.filter(x => x !== p);
+  renderPeople();
+  if (S.session && p.id) await supa.from('participants').delete().eq('id', p.id);
+}
+
+async function resolveTyped(p, input) {
+  const text = input.value.trim();
+  if (!text || hasLoc(p) || !G) return;
+  try {
+    const loc = await geocode(text);
+    if (input.value.trim() !== text) return;
+    p.address = text; p.lat = loc.lat; p.lng = loc.lng;
+    input.classList.add('is-set'); commit(p); updateFindButton();
+  } catch { /* resolved again at search time */ }
+}
+
+function useGPS(p, input) {
+  if (!navigator.geolocation) { toast('This browser can’t share your location. Type an address instead.'); return; }
+  input.placeholder = 'Finding you…';
+  navigator.geolocation.getCurrentPosition(async pos => {
+    const lat = pos.coords.latitude, lng = pos.coords.longitude;
+    let label = 'My current location';
+    try { if (G) label = await reverseGeocode(lat, lng); } catch {}
+    p.address = label; p.lat = lat; p.lng = lng;
+    input.value = label; input.classList.add('is-set');
+    commit(p); updateFindButton(); updateInvite();
+  }, () => {
+    input.placeholder = 'Where are you coming from?';
+    toast('Location access was blocked. Type an address instead, or allow location in your browser settings.');
+  }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 });
+}
+
+// persist a person (session only)
+const commitQueue = new Map();
+function commit(p) {
+  if (isSelf(p)) store.set('lastStart', { address: p.address, lat: p.lat, lng: p.lng });
+  if (!S.session || !p.id) return;
+  clearTimeout(commitQueue.get(p.key));
+  commitQueue.set(p.key, setTimeout(async () => {
+    const { error } = await supa.from('participants').update({
+      name: p.name, address: p.address, lat: hasLoc(p) ? p.lat : null, lng: hasLoc(p) ? p.lng : null, updated_at: new Date().toISOString(),
+    }).eq('id', p.id);
+    if (error) toast('Couldn’t save that to the group. Check your connection.');
+  }, 250));
+}
+
+// ───────────────────────── plan screen: mode, types, CTA ─────────────────────────
+function renderModes() {
+  $('#modes').innerHTML = Object.entries(MODES).map(([k, m]) =>
+    `<button type="button" role="radio" aria-checked="${S.mode === k}" data-mode="${k}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${m.icon}</svg>${m.label}</button>`).join('');
+}
+function renderTypes() {
+  $('#types').innerHTML = TYPES.map(([k, l]) => `<button type="button" class="chip" aria-pressed="${S.types.includes(k)}" data-type="${k}">${l}</button>`).join('');
+}
+$('#modes').addEventListener('click', e => {
+  const b = e.target.closest('[data-mode]'); if (!b) return;
+  S.mode = b.dataset.mode; store.set('mode', S.mode); renderModes(); pushState({ mode: S.mode }); refreshBanners();
+});
+$('#types').addEventListener('click', e => {
+  const b = e.target.closest('[data-type]'); if (!b) return;
+  const t = b.dataset.type;
+  if (S.types.includes(t)) { if (S.types.length > 1) S.types = S.types.filter(x => x !== t); }
+  else S.types = [...S.types, t];
+  store.set('types', S.types); renderTypes(); pushState({ types: S.types }); refreshBanners();
 });
 
-// Override toggleJoinBar to show both options
-window.toggleJoinBar = function() {
-  const bar = document.getElementById('session-join-bar');
-  const btn = document.getElementById('start-session-btn');
-  const visible = bar.style.display === 'block';
-  if (visible) {
-    bar.style.display = 'none';
-    btn.textContent = '👥 Plan with a group — share one link';
+function updateFindButton() {
+  const n = readyPeople().length;
+  const btn = $('#find-btn');
+  btn.disabled = n < 2;
+  btn.textContent = n < 2
+    ? (S.session ? 'Waiting for a second starting point' : 'Add at least two starting points')
+    : `Find fair spots for ${n === 2 ? 'both of you' : 'all ' + n}`;
+}
+function updateInvite() {
+  if (S.session) {
+    $('#invite-btn').hidden = true;
   } else {
-    bar.innerHTML = `
-      <div class="section-label" style="margin-bottom:10px">Group session</div>
-      <button class="session-copy-btn" style="width:100%;margin-bottom:8px" onclick="startSession()">&#10133; Start a new session</button>
-      <div style="text-align:center;font-size:12px;color:#aaa;margin-bottom:8px">— or join an existing one —</div>
-      <div class="session-join-row">
-        <input id="session-code-input" type="text" maxlength="6" placeholder="ABC123" oninput="this.value=this.value.toUpperCase()" />
-        <button class="session-join-btn" onclick="joinSession()">Join</button>
-      </div>`;
-    bar.style.display = 'block';
-    btn.textContent = '✕ Cancel';
-    setTimeout(() => document.getElementById('session-code-input')?.focus(), 100);
+    $('#invite-btn').hidden = false;
   }
-};
+}
 
-checkSessionFromURL();
+// ───────────────────────── Google ─────────────────────────
+window.gInit = function () {
+  G = {
+    geocoder: new google.maps.Geocoder(),
+    dm: new google.maps.DistanceMatrixService(),
+    places: new google.maps.places.PlacesService(document.createElement('div')),
+  };
+  document.querySelectorAll('input[data-ac-pending]').forEach(inp => inp._acAttach && inp._acAttach());
+};
+window.gm_authFailure = function () { toast('Google Maps refused this site’s key. Check the API key restrictions.'); };
+
+function attachAutocomplete(input, onPlace) {
+  const go = () => {
+    if (input._ac) return;
+    input.removeAttribute('data-ac-pending');
+    const ac = new google.maps.places.Autocomplete(input, { fields: ['geometry', 'name', 'formatted_address'] });
+    ac.addListener('place_changed', () => onPlace(ac.getPlace()));
+    input._ac = ac;
+  };
+  if (G) go(); else { input.setAttribute('data-ac-pending', ''); input._acAttach = go; }
+}
+function geocode(address) {
+  return new Promise((res, rej) => G.geocoder.geocode({ address }, (r, s) => s === 'OK' && r[0]
+    ? res({ lat: r[0].geometry.location.lat(), lng: r[0].geometry.location.lng() })
+    : rej(new Error(`We couldn’t find “${address}”. Try a fuller address or pick a suggestion.`))));
+}
+function reverseGeocode(lat, lng) {
+  return new Promise((res, rej) => G.geocoder.geocode({ location: { lat, lng } }, (r, s) => {
+    if (s !== 'OK' || !r[0]) return rej();
+    const street = r.find(x => x.types.includes('street_address') || x.types.includes('premise')) || r[0];
+    res(street.formatted_address.replace(/, (USA|United States|Ireland|UK|United Kingdom)$/, ''));
+  }));
+}
+function nearby(loc, type) {
+  return new Promise(res => G.places.nearbySearch({ location: loc, radius: 5000, type }, (r, s) => res(s === 'OK' ? r : [])));
+}
+function matrix(origins, destinations, mode) {
+  return new Promise((res, rej) => G.dm.getDistanceMatrix({ origins, destinations, travelMode: mode }, (r, s) => {
+    if (s === 'OK') res(r);
+    else if (s === 'REQUEST_DENIED') rej(new Error('Google refused the travel-time request. The Distance Matrix API needs to be enabled for this key.'));
+    else if (s === 'OVER_QUERY_LIMIT') rej(new Error('Google is rate-limiting travel times right now. Try again in a minute.'));
+    else res(null);
+  }));
+}
+function placeDetails(placeId) {
+  return new Promise((res, rej) => G.places.getDetails({
+    placeId,
+    fields: ['name', 'formatted_phone_number', 'website', 'photos', 'opening_hours', 'utc_offset_minutes', 'url', 'reservable', 'business_status'],
+  }, (p, s) => s === 'OK' ? res(p) : rej(s)));
+}
+
+// ───────────────────────── the search ─────────────────────────
+async function findSpots() {
+  if (!G) { toast('Maps are still loading. Try again in a second.'); return; }
+  const ready = readyPeople();
+  if (ready.length < 2) return;
+  showLoading('Placing everyone on the map');
+  try {
+    for (const p of ready) {
+      if (!hasLoc(p)) {
+        const loc = await geocode(p.address.trim());
+        p.lat = loc.lat; p.lng = loc.lng;
+        if (isMine(p)) commit(p);
+      }
+    }
+    const spots = await computeSpots(ready.map(p => ({ slot: p.slot, lat: p.lat, lng: p.lng })), S.mode, S.types);
+    S.results = {
+      at: Date.now(), by: S.session ? (myName() || 'Someone') : '', byClient: CLIENT_ID,
+      sig: signature(), mode: S.mode,
+      people: ready.map(p => ({ slot: p.slot, name: isSelf(p) ? (myName() || '') : p.name })),
+      spots,
+    };
+    S.chosen = null;
+    hideLoading();
+    showResults();
+    pushState({ results: S.results, chosen: null });
+  } catch (err) {
+    hideLoading();
+    toast(err && err.message ? err.message : 'Something went wrong finding spots. Try again.');
+    console.error(err);
+  }
+}
+
+async function computeSpots(locs, mode, types) {
+  const c = { lat: locs.reduce((s, l) => s + l.lat, 0) / locs.length, lng: locs.reduce((s, l) => s + l.lng, 0) / locs.length };
+  const points = [c, ...locs.map(l => ({ lat: (l.lat + c.lat) / 2, lng: (l.lng + c.lng) / 2 }))];
+  setLoading('Looking for places in between');
+  const batches = await Promise.all(points.flatMap(pt => types.map(t => nearby(pt, t))));
+  const filterFood = types.includes('restaurant') || types.includes('cafe');
+  const seen = new Set();
+  let cands = [];
+  for (const p of batches.flat()) {
+    if (!p.geometry || seen.has(p.place_id)) continue;
+    seen.add(p.place_id);
+    if (p.business_status && p.business_status !== 'OPERATIONAL') continue;
+    if (filterFood) {
+      const t = p.types || [];
+      if (t.includes('meal_takeaway') || t.includes('meal_delivery')) continue;
+      if (EXCLUDE_CHAINS.has(p.name)) continue;
+    }
+    const loc = { lat: p.geometry.location.lat(), lng: p.geometry.location.lng() };
+    const d = locs.map(l => haversine(l, loc));
+    cands.push({ p, loc, pre: Math.max(...d) + (Math.max(...d) - Math.min(...d)) * 0.5 });
+  }
+  if (!cands.length) throw new Error('Nothing like that turned up between you. Try another kind of place.');
+  cands.sort((a, b) => a.pre - b.pre);
+  cands = cands.slice(0, 45);
+
+  setLoading(`Timing ${cands.length * locs.length} trips`);
+  const per = Math.max(1, Math.min(25, Math.floor(100 / locs.length)));
+  const chunks = [];
+  for (let i = 0; i < cands.length; i += per) chunks.push(cands.slice(i, i + per));
+  const origins = locs.map(l => ({ lat: l.lat, lng: l.lng }));
+  const resps = await Promise.all(chunks.map(ch => matrix(origins, ch.map(x => x.loc), mode)));
+
+  const scored = [];
+  chunks.forEach((ch, ci) => {
+    const r = resps[ci]; if (!r) return;
+    ch.forEach((cand, j) => {
+      const times = {};
+      let ok = true;
+      locs.forEach((l, i) => {
+        const el = r.rows[i] && r.rows[i].elements[j];
+        if (el && el.status === 'OK') times[l.slot] = el.duration.value; else ok = false;
+      });
+      if (!ok) return;
+      const vals = Object.values(times);
+      scored.push({ cand, times, maxT: Math.max(...vals), spread: Math.max(...vals) - Math.min(...vals), total: vals.reduce((a, b) => a + b, 0) });
+    });
+  });
+  if (!scored.length) throw new Error(mode === 'TRANSIT'
+    ? 'Google has no transit routes for these spots right now. Try driving or another kind of place.'
+    : 'Google couldn’t time trips to any of these spots. Try another travel mode.');
+
+  scored.sort((a, b) => {
+    const ba = Math.floor(a.maxT / 600), bb = Math.floor(b.maxT / 600);
+    return ba - bb || a.spread - b.spread || a.total - b.total;
+  });
+  return scored.slice(0, MAX_RESULTS).map(s => ({
+    id: s.cand.p.place_id, name: s.cand.p.name, vicinity: s.cand.p.vicinity || '',
+    lat: s.cand.loc.lat, lng: s.cand.loc.lng,
+    rating: s.cand.p.rating || null, count: s.cand.p.user_ratings_total || 0, price: s.cand.p.price_level ?? null,
+    type: (s.cand.p.types || []).map(t => TYPE_LABEL[t]).find(Boolean) || '',
+    times: s.times,
+  }));
+}
+
+// ───────────────────────── results screen ─────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('is-active', s.id === id));
+  window.scrollTo(0, 0);
+}
+function showResults() {
+  if (!S.results) return;
+  showScreen('results');
+  renderResults();
+  ensureMap();
+  drawMap();
+}
+$('#back-btn').addEventListener('click', () => { showScreen('plan'); refreshBanners(); });
+$('#see-results-btn').addEventListener('click', showResults);
+$('#refresh-btn').addEventListener('click', findSpots);
+
+function resultPeople() {
+  return S.results.people.map(rp => ({ slot: rp.slot, name: nameOf(rp.slot, rp.name) }));
+}
+
+function renderResults() {
+  const R = S.results;
+  const people = resultPeople();
+  const n = R.spots.length;
+  $('#res-title').textContent = n === 1 ? '1 fair spot' : `${n} fair spots`;
+  const by = R.byClient && R.byClient !== CLIENT_ID && R.by ? ` Found by ${R.by}.` : '';
+  const how = { DRIVING: 'By car', TRANSIT: 'By public transit', WALKING: 'On foot', BICYCLING: 'By bike' }[R.mode] || 'By car';
+  $('#res-sub').textContent = `${how}, for ${people.length} people.${by}`;
+  $('#legend').innerHTML = people.map(p => `<span style="--c:${COLORS[p.slot % COLORS.length]}"><i></i>${esc(p.name)}</span>`).join('');
+  $('#stale').hidden = !(R.sig && R.sig !== signature() && readyPeople().length >= 2);
+
+  const maxAll = Math.max(...R.spots.flatMap(s => Object.values(s.times)));
+  const scaleMax = Math.max(10, Math.ceil(maxAll / 600) * 10);
+
+  $('#list').innerHTML = R.spots.map((s, i) => {
+    const vals = people.map(p => s.times[p.slot]).filter(v => v != null);
+    const lo = Math.min(...vals), hi = Math.max(...vals);
+    const spreadMin = Math.round((hi - lo) / 60);
+    const verdict = spreadMin <= 2 ? '<b>Almost exactly even.</b>' : `<b>Everyone within ${spreadMin} min</b> of each other.`;
+    const pct = v => (v / 60 / scaleMax * 100).toFixed(2);
+    const pins = people.filter(p => s.times[p.slot] != null)
+      .map(p => `<span class="pin" style="left:${pct(s.times[p.slot])}%;--c:${COLORS[p.slot % COLORS.length]}" title="${esc(p.name)}: ${mins(s.times[p.slot])} min"></span>`).join('');
+    const meta = [s.type, s.rating ? `${s.rating.toFixed(1)}★ (${s.count.toLocaleString()})` : '', s.price != null && s.price > 0 ? '$'.repeat(s.price) : '', s.vicinity]
+      .filter(Boolean).map(x => `<span>${esc(x)}</span>`).join('');
+    const chosen = S.chosen && S.chosen.id === s.id;
+    return `<li class="card${chosen ? ' is-chosen' : ''}" data-id="${esc(s.id)}">
+      <button class="card-main" type="button" aria-expanded="false">
+        <span class="rank">${i + 1}</span>
+        <span class="card-body">
+          <span class="card-name">${esc(s.name)}${i === 0 ? '<span class="badge">Best balance</span>' : ''}${chosen ? '<span class="badge" style="background:var(--sun-soft);color:var(--ink)">Picked</span>' : ''}</span>
+          <span class="card-meta">${meta}</span>
+          <span class="fair" style="display:block">
+            <span class="track" style="display:block" aria-hidden="true">
+              <span class="spread" style="left:${pct(lo)}%;width:${(pct(hi) - pct(lo)).toFixed(2)}%"></span>${pins}
+            </span>
+            <span class="scale" aria-hidden="true"><span>0</span><span>${scaleMax / 2} min</span><span>${scaleMax} min</span></span>
+          </span>
+          <span class="verdict" style="display:block">${verdict} Longest trip ${mins(hi)} min.</span>
+          <span class="times">${people.filter(p => s.times[p.slot] != null).map(p => `<span style="--c:${COLORS[p.slot % COLORS.length]}"><i></i>${esc(p.name)} <b>${mins(s.times[p.slot])} min</b></span>`).join('')}</span>
+        </span>
+      </button>
+      <div class="more" hidden></div>
+    </li>`;
+  }).join('');
+  refreshChosenBanners();
+}
+
+$('#list').addEventListener('click', e => {
+  const btn = e.target.closest('.card-main'); if (!btn) return;
+  const li = btn.closest('.card');
+  toggleCard(li, !li.classList.contains('is-open'));
+});
+
+function toggleCard(li, open) {
+  document.querySelectorAll('.card.is-open').forEach(x => { if (x !== li) { x.classList.remove('is-open'); x.querySelector('.more').hidden = true; x.querySelector('.card-main').setAttribute('aria-expanded', 'false'); } });
+  li.classList.toggle('is-open', open);
+  li.querySelector('.card-main').setAttribute('aria-expanded', String(open));
+  const more = li.querySelector('.more');
+  more.hidden = !open;
+  const spot = S.results.spots.find(s => s.id === li.dataset.id);
+  highlightMarker(open ? spot.id : null);
+  if (!open) return;
+  if (map) { map.panTo({ lat: spot.lat, lng: spot.lng }); if (map.getZoom() < 14) map.setZoom(14); }
+  if (!more.dataset.loaded) loadMore(more, spot);
+  else renderActions(more, spot);
+}
+
+function directionsUrl(spot) {
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(spot.name)}&destination_place_id=${encodeURIComponent(spot.id)}&travelmode=${MODES[S.results.mode].dir}`;
+}
+
+function loadMore(el, spot) {
+  el.dataset.loaded = '1';
+  el.innerHTML = '<div class="actions"></div>';
+  renderActions(el, spot);
+  placeDetails(spot.id).then(d => {
+    spot._d = d;
+    let status = '';
+    try {
+      if (d.opening_hours && typeof d.opening_hours.isOpen === 'function') {
+        const open = d.opening_hours.isOpen();
+        if (open === true) status = '<div class="more-status" style="color:var(--ok)">Open now</div>';
+        else if (open === false) status = '<div class="more-status" style="color:var(--bad)">Closed right now</div>';
+      }
+    } catch {}
+    const photos = d.photos && d.photos.length
+      ? `<div class="photos">${d.photos.slice(0, 6).map(p => `<img src="${p.getUrl({ maxWidth: 400, maxHeight: 300 })}" alt="" loading="lazy" />`).join('')}</div>` : '';
+    const reviews = d.url ? `<a class="more-link" href="${esc(d.url)}" target="_blank" rel="noopener">Reviews and photos on Google Maps</a>` : '';
+    el.innerHTML = status + photos + '<div class="actions"></div>' + reviews;
+    renderActions(el, spot);
+  }).catch(() => {});
+}
+
+function renderActions(el, spot) {
+  const box = el.querySelector('.actions'); if (!box) return;
+  const d = spot._d || {};
+  const bookingKeywords = ['resy.com', 'opentable.com', 'sevenrooms.com', 'tock.com', 'yelp.com/reservations', 'book', 'reserve'];
+  const site = d.website || '';
+  const siteIsBooking = site && bookingKeywords.some(k => site.toLowerCase().includes(k));
+  const chosen = S.chosen && S.chosen.id === spot.id;
+  const parts = [`<a class="act primary" href="${directionsUrl(spot)}" target="_blank" rel="noopener">Directions</a>`];
+  if (S.session) parts.push(chosen
+    ? `<button class="act picked" type="button" data-act="unpick">Picked for the group</button>`
+    : `<button class="act pick" type="button" data-act="pick">Pick for the group</button>`);
+  parts.push(`<button class="act" type="button" data-act="share">Share</button>`);
+  if (d.reservable || siteIsBooking) parts.push(`<a class="act" href="${esc(siteIsBooking ? site : (d.url || directionsUrl(spot)))}" target="_blank" rel="noopener">Book a table</a>`);
+  else if (site) parts.push(`<a class="act" href="${esc(site)}" target="_blank" rel="noopener">Website</a>`);
+  if (d.formatted_phone_number) parts.push(`<a class="act" href="tel:${esc(d.formatted_phone_number.replace(/\s/g, ''))}">Call</a>`);
+  box.innerHTML = parts.join('');
+  box.onclick = e => {
+    const a = e.target.closest('[data-act]'); if (!a) return;
+    if (a.dataset.act === 'share') shareSpot(spot);
+    if (a.dataset.act === 'pick') pickSpot(spot);
+    if (a.dataset.act === 'unpick') pickSpot(null);
+  };
+}
+
+function spotSummary(spot) {
+  const times = resultPeople().filter(p => spot.times[p.slot] != null).map(p => `${p.name === 'You' ? (myName() || 'Me') : p.name} ${mins(spot.times[p.slot])} min`).join(', ');
+  return `${spot.name}${spot.vicinity ? ', ' + spot.vicinity : ''}\n${times}`;
+}
+function shareSpot(spot) {
+  const url = S.session ? sessionLink() : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(spot.name)}&query_place_id=${encodeURIComponent(spot.id)}`;
+  share(`How about ${spotSummary(spot)}`, url);
+}
+async function pickSpot(spot) {
+  S.chosen = spot ? { id: spot.id, name: spot.name, by: myName() || 'Someone', byClient: CLIENT_ID } : null;
+  renderResults(); drawMap();
+  if (spot) {
+    const li = document.querySelector(`.card[data-id="${CSS.escape(spot.id)}"]`);
+    if (li) toggleCard(li, true);
+    toast(`Picked ${spot.name}. Everyone in the group can see it.`);
+  }
+  await pushState({ chosen: S.chosen });
+}
+
+function chosenHTML() {
+  const c = S.chosen;
+  const spot = S.results && S.results.spots.find(s => s.id === c.id);
+  const who = c.byClient === CLIENT_ID ? 'You picked it.' : `${esc(c.by)} picked it.`;
+  return `<div class="grow"><strong>Meeting at ${esc(c.name)}</strong><p>${who}</p></div>` +
+    (spot ? `<a class="small-btn" href="${directionsUrl(spot)}" target="_blank" rel="noopener" style="text-decoration:none">Directions</a>` : '');
+}
+function refreshChosenBanners() {
+  ['#chosen-plan', '#chosen-res'].forEach(id => {
+    const el = $(id);
+    if (S.chosen) { el.innerHTML = chosenHTML(); el.hidden = false; } else el.hidden = true;
+  });
+}
+
+// ───────────────────────── map ─────────────────────────
+const MAP_STYLE = [
+  { featureType: 'poi', stylers: [{ visibility: 'off' }] },
+  { featureType: 'poi.park', stylers: [{ visibility: 'simplified' }] },
+  { featureType: 'transit.station', stylers: [{ visibility: 'simplified' }] },
+  { featureType: 'road', elementType: 'labels.icon', stylers: [{ visibility: 'off' }] },
+  { elementType: 'geometry', stylers: [{ saturation: -60 }] },
+  { featureType: 'water', stylers: [{ color: '#cfe0e3' }] },
+];
+function ensureMap() {
+  if (map || !G) return;
+  map = new google.maps.Map($('#map'), { center: { lat: 40.75, lng: -73.9 }, zoom: 12, disableDefaultUI: true, zoomControl: true, gestureHandling: 'greedy', clickableIcons: false, styles: MAP_STYLE });
+}
+function svgIcon(svg, w, h, ax, ay) {
+  return { url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg), scaledSize: new google.maps.Size(w, h), anchor: new google.maps.Point(ax, ay) };
+}
+function personIcon(slot, letter) {
+  const c = COLORS[slot % COLORS.length];
+  return svgIcon(`<svg xmlns="http://www.w3.org/2000/svg" width="34" height="34"><circle cx="17" cy="17" r="14" fill="${c}" stroke="#fff" stroke-width="3"/><text x="17" y="22" font-family="Arial, sans-serif" font-size="14" font-weight="700" fill="#fff" text-anchor="middle">${esc(letter)}</text></svg>`, 34, 34, 17, 17);
+}
+function placeIcon(n, state) {
+  const fill = state === 'chosen' ? '#FFD000' : state === 'open' ? '#FFD000' : '#26160f';
+  const txt = state ? '#26160f' : '#fff';
+  const s = state ? 1.2 : 1;
+  const w = Math.round(30 * s), h = Math.round(38 * s);
+  return svgIcon(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 30 38"><path d="M15 37C15 37 2 23.5 2 14.5A13 13 0 0 1 28 14.5C28 23.5 15 37 15 37Z" fill="${fill}" stroke="#fff" stroke-width="2"/><text x="15" y="19.5" font-family="Arial, sans-serif" font-size="13" font-weight="700" fill="${txt}" text-anchor="middle">${n}</text></svg>`, w, h, w / 2, h);
+}
+function drawMap() {
+  if (!map || !S.results) return;
+  mapMarkers.forEach(m => m.setMap(null)); mapMarkers = []; placeMarkers.clear();
+  const bounds = new google.maps.LatLngBounds();
+  const people = resultPeople();
+  people.forEach(rp => {
+    const p = S.people.find(x => x.slot === rp.slot);
+    if (!p || !hasLoc(p)) return;
+    const letter = (rp.name === 'You' ? (myName() || 'Y') : rp.name)[0].toUpperCase();
+    const m = new google.maps.Marker({ position: { lat: p.lat, lng: p.lng }, map, icon: personIcon(rp.slot, letter), title: rp.name, zIndex: 5 });
+    mapMarkers.push(m); bounds.extend(m.getPosition());
+  });
+  S.results.spots.forEach((s, i) => {
+    const chosen = S.chosen && S.chosen.id === s.id;
+    const m = new google.maps.Marker({ position: { lat: s.lat, lng: s.lng }, map, icon: placeIcon(i + 1, chosen ? 'chosen' : ''), title: s.name, zIndex: chosen ? 50 : 10 + (MAX_RESULTS - i) });
+    m._n = i + 1; m._chosen = chosen;
+    m.addListener('click', () => {
+      const li = document.querySelector(`.card[data-id="${CSS.escape(s.id)}"]`);
+      if (li) { toggleCard(li, true); li.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    });
+    placeMarkers.set(s.id, m); mapMarkers.push(m); bounds.extend(m.getPosition());
+  });
+  const narrow = window.innerWidth < 900;
+  map.fitBounds(bounds, narrow ? { top: 60, bottom: 40, left: 30, right: 30 } : 60);
+}
+function highlightMarker(id) {
+  placeMarkers.forEach((m, sid) => {
+    const on = sid === id;
+    m.setIcon(placeIcon(m._n, on ? 'open' : (m._chosen ? 'chosen' : '')));
+    m.setZIndex(on ? 100 : (m._chosen ? 50 : 10 + (MAX_RESULTS - m._n)));
+  });
+}
+
+// ───────────────────────── sharing ─────────────────────────
+function sessionLink() { return `${location.origin}${location.pathname}?g=${S.session.code}`; }
+async function share(text, url) {
+  if (navigator.share) {
+    try { await navigator.share({ title: 'Midcamino', text, url }); return true; }
+    catch (e) { if (e && e.name === 'AbortError') return false; }
+  }
+  try { await navigator.clipboard.writeText(url ? `${text}\n${url}` : text); toast('Copied. Paste it into your group chat.'); return true; }
+  catch { toast(url || text); return false; }
+}
+function shareInvite() {
+  const who = myName();
+  return share(`${who ? who + ' wants' : 'Want'} to find somewhere fair to meet. Add where you’re coming from:`, sessionLink());
+}
+$('#share-link-btn').addEventListener('click', shareInvite);
+
+// ───────────────────────── group sessions ─────────────────────────
+function genCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const a = new Uint32Array(6); crypto.getRandomValues(a);
+  return [...a].map(x => chars[x % chars.length]).join('');
+}
+function needSupa() {
+  if (supa) return true;
+  toast('Group plans can’t connect right now. Check your connection and reload.');
+  return false;
+}
+
+$('#invite-btn').addEventListener('click', () => {
+  if (!needSupa()) return;
+  $('#name-input').value = myName();
+  openModal('#name-modal');
+});
+$('#name-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const name = $('#name-input').value.trim(); if (!name) return;
+  store.set('name', name);
+  const btn = $('#name-submit'); btn.disabled = true; btn.textContent = 'Creating link…';
+  try {
+    await createSession();
+    closeModal('#name-modal');
+    const shared = await shareInvite();
+    if (!shared) toast('Your group link is ready. Tap Share link to send it.');
+  } catch (err) {
+    console.error(err); toast('Couldn’t create the group link. Check your connection and try again.');
+  } finally { btn.disabled = false; btn.textContent = 'Create group link'; }
+});
+
+async function createSession() {
+  let sess = null;
+  for (let i = 0; i < 4 && !sess; i++) {
+    const { data, error } = await supa.from('sessions').insert({ code: genCode(), state: { mode: S.mode, types: S.types } }).select('id, code, state').single();
+    if (!error) sess = data; else if (error.code !== '23505') throw error;
+  }
+  if (!sess) throw new Error('code collision');
+  // move the people already entered into the group, keeping order
+  const local = S.people.filter(p => isSelf(p) || p.address.trim() || p.name);
+  const rows = local.map((p, i) => ({
+    session_id: sess.id, slot: i, client_id: CLIENT_ID,
+    name: isSelf(p) ? myName() : p.name, address: p.address, lat: hasLoc(p) ? p.lat : null, lng: hasLoc(p) ? p.lng : null,
+  }));
+  const selfIdx = local.findIndex(isSelf);
+  const { error } = await supa.from('participants').insert(rows);
+  if (error) throw error;
+  store.set('self_' + sess.code, selfIdx);
+  await enterSession(sess, selfIdx);
+}
+
+async function insertParticipant(fields, wantSelf) {
+  for (let tries = 0; tries < 6; tries++) {
+    const { data: rows } = await supa.from('participants').select('slot').eq('session_id', S.session.id);
+    const slot = nextFreeSlot((rows || []).map(r => r.slot));
+    if (slot < 0) { toast('This group is full. Five people is the most Midcamino can balance.'); return null; }
+    const { data, error } = await supa.from('participants').insert({ session_id: S.session.id, slot, client_id: CLIENT_ID, name: '', address: '', ...fields }).select().single();
+    if (!error) return data;
+    if (error.code !== '23505') { toast('Couldn’t add that to the group. Check your connection.'); return null; }
+  }
+  return null;
+}
+
+async function enterSession(sess, mySlot) {
+  S.session = { id: sess.id, code: sess.code };
+  S.mySlot = mySlot;
+  S.sessionState = sess.state || {};
+  history.replaceState(null, '', `?g=${sess.code}`);
+  store.set('session', sess.code);
+  $('#group-code').textContent = sess.code;
+  $('#group-banner').hidden = false;
+  applyState(S.sessionState, true);
+  subscribe();
+  await refetch();
+}
+
+function leaveSessionLocally() {
+  if (S.channel) { supa.removeChannel(S.channel); S.channel = null; }
+  S.session = null; store.del('session');
+  history.replaceState(null, '', location.pathname);
+  $('#group-banner').hidden = true;
+}
+
+function toPerson(r) {
+  return { key: 'p' + r.id, id: r.id, slot: r.slot, name: r.name || '', address: r.address || '', lat: r.lat, lng: r.lng, owner: r.client_id };
+}
+function upsertPersonFromRow(r) {
+  const i = S.people.findIndex(p => p.id === r.id);
+  const next = toPerson(r);
+  if (i >= 0) {
+    const cur = S.people[i];
+    // don't clobber what I'm typing right now
+    const li = document.querySelector(`[data-key="${CSS.escape(cur.key)}"]`);
+    const typing = li && li.contains(document.activeElement);
+    if (typing && isMine(cur)) return;
+    S.people[i] = { ...cur, ...next, key: cur.key };
+  } else S.people.push(next);
+}
+
+async function refetch() {
+  if (!S.session) return;
+  const [{ data: rows, error }, { data: sess }] = await Promise.all([
+    supa.from('participants').select('*').eq('session_id', S.session.id).order('slot'),
+    supa.from('sessions').select('state').eq('id', S.session.id).single(),
+  ]);
+  if (error) { toast('Lost touch with the group. Reconnecting…'); return; }
+  const ids = new Set(rows.map(r => r.id));
+  S.people = S.people.filter(p => !p.id || ids.has(p.id)).filter(p => p.id);
+  rows.forEach(upsertPersonFromRow);
+  renderPeople();
+  if (sess) applyState(sess.state || {});
+  if (!S.people.some(isSelf)) {
+    // my row is gone (removed elsewhere); fall back to a solo plan
+    leaveSessionLocally(); resetLocal(); toast('You’re no longer in that group.');
+  }
+}
+
+function subscribe() {
+  if (S.channel) supa.removeChannel(S.channel);
+  const id = S.session.id;
+  S.channel = supa.channel('g-' + id)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'participants', filter: `session_id=eq.${id}` }, onParticipant)
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'sessions', filter: `id=eq.${id}` }, p => applyState(p.new.state || {}))
+    .subscribe(status => { if (status === 'SUBSCRIBED') refetch(); });
+}
+
+function onParticipant(p) {
+  if (p.eventType === 'DELETE') {
+    const gone = S.people.find(x => x.id === p.old.id);
+    S.people = S.people.filter(x => x.id !== p.old.id);
+    renderPeople();
+    if (gone && !isMine(gone) && gone.name) toast(`${gone.name} left the group.`);
+    return;
+  }
+  const r = p.new;
+  const isNew = !S.people.some(x => x.id === r.id);
+  upsertPersonFromRow(r);
+  renderPeople();
+  if (S.results && $('#results').classList.contains('is-active')) $('#stale').hidden = !(S.results.sig !== signature());
+  if (r.client_id === CLIENT_ID) return;
+  if (isNew && r.name) toast(`${r.name} joined the group.`);
+  else if (p.eventType === 'UPDATE' && r.address && p.old && !p.old.address) toast(`${r.name || 'Someone'} added where they’re coming from.`);
+}
+
+async function pushState(patch) {
+  if (!S.session) return;
+  S.sessionState = { ...S.sessionState, ...patch };
+  const { error } = await supa.from('sessions').update({ state: S.sessionState }).eq('id', S.session.id);
+  if (error) toast('Couldn’t share that with the group. Check your connection.');
+}
+
+function applyState(st, initial) {
+  S.sessionState = st || {};
+  if (st.mode && MODES[st.mode] && st.mode !== S.mode) { S.mode = st.mode; renderModes(); }
+  if (Array.isArray(st.types) && st.types.length && st.types.join() !== S.types.join()) { S.types = st.types; renderTypes(); }
+  const prevResultsAt = S.results && S.results.at;
+  if (st.results && st.results.at !== prevResultsAt) {
+    S.results = st.results;
+    if ($('#results').classList.contains('is-active')) { renderResults(); drawMap(); }
+    else if (!initial && st.results.byClient !== CLIENT_ID) toast(`${st.results.by || 'Someone'} found ${st.results.spots.length} spots.`);
+  }
+  const prevChosen = S.chosen && S.chosen.id;
+  S.chosen = st.chosen || null;
+  if ((S.chosen && S.chosen.id) !== prevChosen) {
+    if ($('#results').classList.contains('is-active') && S.results) { renderResults(); drawMap(); }
+    if (!initial && S.chosen && S.chosen.byClient !== CLIENT_ID) toast(`${S.chosen.by} picked ${S.chosen.name}.`);
+  }
+  refreshBanners();
+}
+
+function refreshBanners() {
+  refreshChosenBanners();
+  const rr = $('#results-ready');
+  if (S.results && $('#plan').classList.contains('is-active')) {
+    const stale = S.results.sig !== signature();
+    $('#ready-title').textContent = `${S.results.spots.length} spots found`;
+    $('#ready-sub').textContent = stale ? 'Found before the latest changes. Search again to update them.'
+      : (S.results.byClient && S.results.byClient !== CLIENT_ID && S.results.by ? `${S.results.by} ran the search.` : 'From your last search.');
+    rr.hidden = false;
+  } else rr.hidden = true;
+}
+
+// joining via link / code
+async function openGroup(code) {
+  code = (code || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (code.length !== 6 || !needSupa()) return;
+  const { data: sess, error } = await supa.from('sessions').select('id, code, state').eq('code', code).maybeSingle();
+  if (error || !sess) { toast('That group code didn’t match anything. Check it and try again.'); history.replaceState(null, '', location.pathname); return; }
+  const { data: rows } = await supa.from('participants').select('*').eq('session_id', sess.id).order('slot');
+  const savedSelf = store.get('self_' + code, null);
+  const mine = (rows || []).find(r => r.client_id === CLIENT_ID && r.slot === savedSelf);
+  if (mine) { S.people = []; await enterSession(sess, mine.slot); return; }
+  const host = (rows || []).find(r => r.slot === 0) || (rows || [])[0];
+  $('#join-title').textContent = host && host.name ? `${host.name} invited you` : 'You’re invited';
+  $('#join-lede').textContent = `Add where you’re coming from and Midcamino finds somewhere fair for ${rows && rows.length ? 'all ' + (rows.length + 1) + ' of you' : 'everyone'}.`;
+  $('#join-name').value = myName();
+  const me = S.people.find(isSelf);
+  $('#join-addr').value = me && me.address ? me.address : '';
+  joinDraft.lat = me && hasLoc(me) ? me.lat : null; joinDraft.lng = me && hasLoc(me) ? me.lng : null;
+  joinDraft.sess = sess;
+  openModal('#join-modal');
+}
+const joinDraft = { lat: null, lng: null, sess: null };
+$('#join-addr').addEventListener('input', () => { joinDraft.lat = joinDraft.lng = null; });
+$('#join-gps').innerHTML = ICON.gps;
+$('#join-gps').addEventListener('click', () => {
+  useGPSInto($('#join-addr'), (label, lat, lng) => { joinDraft.lat = lat; joinDraft.lng = lng; });
+});
+function useGPSInto(input, done) {
+  if (!navigator.geolocation) { toast('This browser can’t share your location. Type an address instead.'); return; }
+  input.placeholder = 'Finding you…';
+  navigator.geolocation.getCurrentPosition(async pos => {
+    const lat = pos.coords.latitude, lng = pos.coords.longitude;
+    let label = 'My current location';
+    try { if (G) label = await reverseGeocode(lat, lng); } catch {}
+    input.value = label; done(label, lat, lng);
+  }, () => { input.placeholder = 'Address, station or place'; toast('Location access was blocked. Type an address instead.'); }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 });
+}
+attachAutocomplete($('#join-addr'), place => {
+  if (!place.geometry) return;
+  joinDraft.lat = place.geometry.location.lat(); joinDraft.lng = place.geometry.location.lng();
+});
+$('#join-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const name = $('#join-name').value.trim(); if (!name) return;
+  const address = $('#join-addr').value.trim();
+  const btn = $('#join-submit'); btn.disabled = true; btn.textContent = 'Joining…';
+  try {
+    store.set('name', name);
+    if (address && joinDraft.lat == null && G) { try { const l = await geocode(address); joinDraft.lat = l.lat; joinDraft.lng = l.lng; } catch {} }
+    S.session = { id: joinDraft.sess.id, code: joinDraft.sess.code };
+    const row = await insertParticipant({ name, address, lat: joinDraft.lat, lng: joinDraft.lng });
+    if (!row) { S.session = null; return; }
+    store.set('self_' + joinDraft.sess.code, row.slot);
+    if (address) store.set('lastStart', { address, lat: joinDraft.lat, lng: joinDraft.lng });
+    S.people = [];
+    closeModal('#join-modal');
+    await enterSession(joinDraft.sess, row.slot);
+    toast(address ? 'You’re in. Everyone can see where you’re coming from.' : 'You’re in. Add where you’re coming from when you know.');
+  } finally { btn.disabled = false; btn.textContent = 'Join the group'; }
+});
+$('#join-modal').addEventListener('click', e => {
+  if (e.target.closest('[data-close]') || e.target === $('#join-modal')) history.replaceState(null, '', location.pathname);
+});
+
+$('#code-btn').addEventListener('click', () => {
+  if (S.session) { leaveGroup(); return; }
+  $('#code-input').value = ''; openModal('#code-modal');
+});
+$('#code-input').addEventListener('input', e => { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); });
+$('#code-form').addEventListener('submit', e => { e.preventDefault(); closeModal('#code-modal'); openGroup($('#code-input').value); });
+
+async function leaveGroup() {
+  const me = S.people.find(isSelf);
+  const keep = me ? { address: me.address, lat: me.lat, lng: me.lng } : null;
+  if (me && me.id) await supa.from('participants').delete().eq('id', me.id);
+  const code = S.session && S.session.code;
+  leaveSessionLocally();
+  if (code) store.del('self_' + code);
+  resetLocal(keep);
+  toast('You left the group.');
+}
+
+function resetLocal(keep) {
+  S.mySlot = 0; S.results = null; S.chosen = null; S.sessionState = {};
+  const last = keep || store.get('lastStart', null);
+  S.people = [localPerson(0, last ? { address: last.address || '', lat: last.lat ?? null, lng: last.lng ?? null } : {}), localPerson(1)];
+  showScreen('plan'); renderPeople(); refreshBanners();
+}
+
+function syncHeader() { $('#code-btn').textContent = S.session ? 'Leave group' : 'Join with a code'; }
+const _render = renderPeople;
+renderPeople = function () { _render(); syncHeader(); };
+
+// keep realtime honest when the phone wakes up
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && S.session) refetch(); });
+window.addEventListener('online', () => { if (S.session) { subscribe(); } });
+
+$('#add-btn').addEventListener('click', addPerson);
+$('#find-btn').addEventListener('click', findSpots);
+
+// ───────────────────────── boot ─────────────────────────
+(function boot() {
+  renderModes(); renderTypes();
+  resetLocal();
+  const q = new URLSearchParams(location.search);
+  // old-style prefilled links (?p0=...&p1=...)
+  const pre = [0, 1, 2, 3, 4].map(i => q.get('p' + i)).filter(Boolean);
+  if (pre.length) {
+    S.people = pre.map((a, i) => localPerson(i, { address: a }));
+    if (S.people.length < MAX_PEOPLE) S.people.push(localPerson(S.people.length));
+    S.mySlot = S.people.length - 1;
+    renderPeople();
+  }
+  const code = q.get('g') || q.get('session');
+  if (code) openGroup(code);
+  else {
+    const saved = store.get('session', null);
+    if (saved && store.get('self_' + saved, null) != null) openGroup(saved);
+  }
+})();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+}
 </script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCLqZ8CEafy_1_UZgYa-DeDUTI96p9DKHU&v=quarterly&libraries=places&callback=gInit" async defer></script>
+</body>
+</html>

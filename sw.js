@@ -1,5 +1,5 @@
-const CACHE = 'midcamino-v4';
-const PRECACHE = ['/manifest.json'];
+const CACHE = 'midcamino-v6';
+const PRECACHE = ['/manifest.json', '/icons/icon-192.png', '/icons/icon-512.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(
