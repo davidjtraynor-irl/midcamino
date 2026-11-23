@@ -1173,16 +1173,13 @@ function toPerson(r) {
   return { key: 'p' + r.id, id: r.id, slot: r.slot, name: r.name || '', address: r.address || '', lat: r.lat, lng: r.lng, owner: r.client_id };
 }
 function upsertPersonFromRow(r) {
-  const i = S.people.findIndex(p => p.id === r.id);
-  const next = toPerson(r);
-  if (i >= 0) {
-    const cur = S.people[i];
-    // don't clobber what I'm typing right now
-    const li = document.querySelector(`[data-key="${CSS.escape(cur.key)}"]`);
-    const typing = li && li.contains(document.activeElement);
-    if (typing && isMine(cur)) return;
-    S.people[i] = { ...cur, ...next, key: cur.key };
-  } else S.people.push(next);
+  const cur = S.people.find(p => p.id === r.id);
+  if (!cur) { S.people.push(toPerson(r)); return; }
+  // Rows I own are edited here; the server only echoes my own saves back,
+  // which can arrive out of order. Keep the local copy for those.
+  if (isMine(cur)) return;
+  // Update in place so the row's event handlers keep pointing at the same object.
+  Object.assign(cur, toPerson(r), { key: cur.key });
 }
 
 async function refetch() {
