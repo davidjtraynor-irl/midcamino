@@ -56,8 +56,22 @@ button { cursor: pointer; background: none; border: 0; }
 .link-btn { font-size: 14px; font-weight: 600; color: var(--muted); padding: 8px 4px; }
 .link-btn:hover { color: var(--terra); }
 
-.title { font-family: var(--display); font-weight: 800; font-size: clamp(30px, 8.4vw, 40px); line-height: 1.02; letter-spacing: -0.03em; margin: 22px 0 18px; text-wrap: balance; }
+.title { font-family: var(--display); font-weight: 800; font-size: clamp(32px, 9vw, 44px); line-height: 1.02; letter-spacing: -0.03em; margin: 22px 0 14px; text-wrap: balance; }
 .h2 { font-family: var(--display); font-weight: 650; font-size: 17px; letter-spacing: -0.01em; margin: 30px 0 10px; }
+.lede { color: var(--muted); font-size: 16px; margin: -6px 0 0; max-width: 40ch; }
+.invite { margin-top: 18px; }
+.live .h2 { margin-bottom: 4px; }
+.live-status { font-size: 14px; color: var(--muted); }
+.live-status.busy::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--sun); margin-right: 8px; vertical-align: 1px; animation: blink 1s infinite; }
+.live-status.err { color: var(--bad); }
+.mini { list-style: none; margin-top: 8px; transition: opacity .2s; }
+.mini.dim { opacity: .45; }
+.mini li button { display: flex; gap: 12px; width: 100%; text-align: left; padding: 10px 0; border-bottom: 1px solid var(--line); align-items: flex-start; }
+.mini li:last-child button { border-bottom: 0; }
+.mini .rank { width: 24px; height: 24px; font-size: 13px; border-radius: 8px; }
+.mini li:first-child .rank { background: var(--sun); color: var(--ink); }
+.mini-name { display: block; font-family: var(--display); font-weight: 650; font-size: 16px; line-height: 1.25; }
+.mini-sub { display: block; font-size: 13px; color: var(--muted); margin-top: 1px; }
 
 .banner { display: flex; gap: 12px; align-items: center; border-radius: 16px; padding: 12px 14px; margin-top: 12px; font-size: 14px; }
 .banner p { color: var(--muted); font-size: 13px; }
@@ -99,7 +113,7 @@ button { cursor: pointer; background: none; border: 0; }
 .add-row { display: flex; align-items: center; gap: 12px; padding: 7px 0 0; color: var(--terra); font-weight: 650; font-size: 15px; }
 .add-row .dot { background: var(--paper); color: var(--terra); box-shadow: 0 0 0 4px var(--paper), inset 0 0 0 1.5px var(--terra); margin-top: 0; font-size: 20px; font-weight: 650; }
 
-.invite { display: flex; gap: 14px; align-items: center; width: 100%; text-align: left; margin-top: 22px; padding: 16px; border-radius: 18px; background: var(--sun); color: var(--ink); transition: transform .12s; }
+.invite { display: flex; gap: 14px; align-items: center; width: 100%; text-align: left; padding: 16px; border-radius: 18px; background: var(--sun); color: var(--ink); transition: transform .12s; }
 .invite:active { transform: scale(.985); }
 .invite-ic { flex-shrink: 0; width: 44px; height: 44px; border-radius: 50%; background: var(--ink); color: var(--sun); display: grid; place-items: center; }
 .invite-ic svg { width: 22px; height: 22px; }
@@ -239,20 +253,23 @@ button { cursor: pointer; background: none; border: 0; }
 
     <div id="chosen-plan" class="banner banner-chosen" hidden></div>
 
-    <div id="results-ready" class="banner banner-results" hidden>
-      <div class="grow"><strong id="ready-title"></strong><p id="ready-sub"></p></div>
-      <button class="small-btn alt" id="see-results-btn">See them</button>
-    </div>
-
-    <h1 class="title">Where's everyone coming from?</h1>
-
-    <ul id="people" class="people" aria-label="Starting points"></ul>
-    <button class="add-row" id="add-btn"><span class="dot" aria-hidden="true">+</span>Add someone</button>
+    <h1 class="title" id="plan-title">Where shall we meet?</h1>
+    <p class="lede" id="plan-lede">Send the group one link. Everyone adds where they're coming from, and the fairest spots appear as they do.</p>
 
     <button class="invite" id="invite-btn">
       <span class="invite-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1 1"/><path d="M14 10a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1-1"/></svg></span>
-      <span><strong id="invite-title">Let friends add their own spot</strong><small id="invite-sub">Send one link to the group chat. Where they're coming from appears here as they add it.</small></span>
+      <span><strong>Share a link with the group</strong><small>Paste it in the group chat. You can add your own starting point after.</small></span>
     </button>
+
+    <h2 class="h2" id="people-label">Starting points</h2>
+    <ul id="people" class="people" aria-labelledby="people-label"></ul>
+    <button class="add-row" id="add-btn"><span class="dot" aria-hidden="true">+</span><span id="add-label">Add someone yourself</span></button>
+
+    <section class="live" id="live" aria-live="polite">
+      <h2 class="h2">Fairest spots right now</h2>
+      <p class="live-status" id="live-status"></p>
+      <ol class="mini" id="mini"></ol>
+    </section>
 
     <h2 class="h2" id="mode-label">Getting there</h2>
     <div class="seg" role="radiogroup" aria-labelledby="mode-label" id="modes"></div>
@@ -275,8 +292,7 @@ button { cursor: pointer; background: none; border: 0; }
     <div class="sheet-inner">
       <div id="chosen-res" class="banner banner-chosen" hidden style="margin:0 0 14px"></div>
       <div id="stale" class="banner banner-results" hidden style="margin:0 0 14px">
-        <div class="grow"><strong>Someone's starting point changed</strong><p>These spots were found before the change.</p></div>
-        <button class="small-btn" id="refresh-btn">Update</button>
+        <div class="grow"><strong id="stale-title">Updating for the latest changes</strong><p id="stale-sub">These spots will refresh in a moment.</p></div>
       </div>
       <h1 class="res-title" id="res-title"></h1>
       <p class="res-sub" id="res-sub"></p>
@@ -293,17 +309,6 @@ button { cursor: pointer; background: none; border: 0; }
     <svg viewBox="0 0 80 40" aria-hidden="true"><path class="curve" d="M6 14C20 14 30 30 40 30S60 14 74 14" fill="none" stroke="#b5451b" stroke-width="4" stroke-linecap="round"/><circle cx="6" cy="14" r="5" fill="#b5451b" opacity=".45"/><circle cx="74" cy="14" r="5" fill="#b5451b" opacity=".45"/><g class="meet"><circle cx="40" cy="30" r="9" fill="#FFD000"/><circle cx="40" cy="30" r="3.5" fill="#b5451b"/></g></svg>
     <p id="loading-msg">Working out the middle</p>
   </div>
-</div>
-
-<div id="name-modal" class="modal" hidden>
-  <form class="modal-card" id="name-form">
-    <h2>What should friends call you?</h2>
-    <p class="lede">Your name shows next to your starting point in the group.</p>
-    <label class="label" for="name-input">Your name</label>
-    <input class="plain" id="name-input" autocomplete="given-name" maxlength="24" required />
-    <button class="cta" type="submit" id="name-submit">Create group link</button>
-    <button class="text-btn" type="button" data-close>Cancel</button>
-  </form>
 </div>
 
 <div id="join-modal" class="modal" hidden>
@@ -441,9 +446,9 @@ function nameOf(slot, fallbackName) {
   return (p && p.name) || fallbackName || 'Person ' + (slot + 1);
 }
 function hasLoc(p) { return typeof p.lat === 'number' && typeof p.lng === 'number'; }
-function readyPeople() { return S.people.filter(p => p.address.trim()); }
+function readyPeople() { return S.people.filter(p => p.address.trim() && hasLoc(p)); }
 function signature() {
-  return readyPeople().map(p => p.slot + ':' + (hasLoc(p) ? p.lat.toFixed(4) + ',' + p.lng.toFixed(4) : p.address.trim().toLowerCase())).sort().join('|') + '|' + S.mode + '|' + [...S.types].sort().join(',');
+  return readyPeople().map(p => p.slot + ':' + p.lat.toFixed(4) + ',' + p.lng.toFixed(4)).sort().join('|') + '|' + S.mode + '|' + [...S.types].sort().join(',');
 }
 function nextFreeSlot(taken) { for (let i = 0; i < MAX_PEOPLE; i++) if (!taken.includes(i)) return i; return -1; }
 
@@ -463,7 +468,7 @@ function renderPeople() {
     updateRow(li, p);
   });
   $('#add-btn').hidden = S.people.length >= MAX_PEOPLE;
-  updateFindButton();
+  updateCTA();
   updateInvite();
 }
 
@@ -477,7 +482,7 @@ function buildRow(p) {
     li.innerHTML = `
       <span class="dot" aria-hidden="true"></span>
       <div class="person-main">
-        ${self ? '<span class="person-name">You</span>' : '<input class="person-name" maxlength="24" placeholder="Add a name (optional)" aria-label="Name" />'}
+        ${self ? '<input class="person-name" maxlength="24" placeholder="Your name" aria-label="Your name" autocomplete="given-name" />' : '<input class="person-name" maxlength="24" placeholder="Add a name (optional)" aria-label="Name" />'}
         <div class="field">
           <input class="addr" autocomplete="off" placeholder="${self ? 'Where are you coming from?' : 'Where are they coming from?'}" aria-label="${self ? 'Your starting point' : 'Their starting point'}" />
           <button class="field-btn gps" type="button" aria-label="Use my current location">${ICON.gps}</button>
@@ -487,19 +492,23 @@ function buildRow(p) {
     const addr = li.querySelector('.addr');
     addr.addEventListener('input', () => {
       p.address = addr.value; p.lat = p.lng = null;
-      addr.classList.remove('is-set'); updateFindButton(); updateInvite();
+      addr.classList.remove('is-set'); updateCTA();
     });
     addr.addEventListener('change', () => resolveTyped(p, addr));
     addr.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addr.blur(); } });
     li.querySelector('.gps').addEventListener('click', () => useGPS(p, addr));
     const nm = li.querySelector('input.person-name');
-    if (nm) nm.addEventListener('change', () => { p.name = nm.value.trim(); commit(p); });
+    if (nm) nm.addEventListener('change', () => {
+      p.name = nm.value.trim();
+      if (self) store.set('name', p.name);
+      updateRow(li, p); commit(p);
+    });
     const rm = li.querySelector('.remove');
     if (rm) rm.addEventListener('click', () => removePerson(p));
     attachAutocomplete(addr, place => {
       if (!place.geometry) return;
       p.address = addr.value; p.lat = place.geometry.location.lat(); p.lng = place.geometry.location.lng();
-      addr.classList.add('is-set'); commit(p); updateFindButton();
+      addr.classList.add('is-set'); commit(p);
     });
   } else {
     li.innerHTML = `
@@ -512,14 +521,14 @@ function buildRow(p) {
 function updateRow(li, p) {
   const dot = li.querySelector('.dot');
   dot.style.setProperty('--c', COLORS[p.slot % COLORS.length]);
-  const label = isSelf(p) ? (myName() || 'You') : (p.name || '');
+  const label = isSelf(p) ? (p.name || myName() || 'You') : (p.name || '');
   dot.textContent = (label.trim()[0] || String(p.slot + 1)).toUpperCase();
   if (isMine(p)) {
     const addr = li.querySelector('.addr');
     if (document.activeElement !== addr && addr.value !== p.address) addr.value = p.address;
     addr.classList.toggle('is-set', hasLoc(p) && !!p.address);
     const nm = li.querySelector('input.person-name');
-    if (nm && document.activeElement !== nm) nm.value = p.name;
+    if (nm && document.activeElement !== nm) nm.value = isSelf(p) ? (p.name || myName()) : p.name;
   } else {
     li.querySelector('.person-name').textContent = p.name || 'Someone';
     const ro = li.querySelector('.readonly');
@@ -546,6 +555,7 @@ async function addPerson() {
 async function removePerson(p) {
   S.people = S.people.filter(x => x !== p);
   renderPeople();
+  scheduleAuto(true);
   if (S.session && p.id) await supa.from('participants').delete().eq('id', p.id);
 }
 
@@ -556,8 +566,8 @@ async function resolveTyped(p, input) {
     const loc = await geocode(text);
     if (input.value.trim() !== text) return;
     p.address = text; p.lat = loc.lat; p.lng = loc.lng;
-    input.classList.add('is-set'); commit(p); updateFindButton();
-  } catch { /* resolved again at search time */ }
+    input.classList.add('is-set'); commit(p);
+  } catch (e) { if (input.value.trim() === text) toast(e.message); }
 }
 
 function useGPS(p, input) {
@@ -569,7 +579,7 @@ function useGPS(p, input) {
     try { if (G) label = await reverseGeocode(lat, lng); } catch {}
     p.address = label; p.lat = lat; p.lng = lng;
     input.value = label; input.classList.add('is-set');
-    commit(p); updateFindButton(); updateInvite();
+    commit(p);
   }, () => {
     input.placeholder = 'Where are you coming from?';
     toast('Location access was blocked. Type an address instead, or allow location in your browser settings.');
@@ -580,6 +590,8 @@ function useGPS(p, input) {
 const commitQueue = new Map();
 function commit(p) {
   if (isSelf(p)) store.set('lastStart', { address: p.address, lat: p.lat, lng: p.lng });
+  updateCTA();
+  scheduleAuto(true);
   if (!S.session || !p.id) return;
   clearTimeout(commitQueue.get(p.key));
   commitQueue.set(p.key, setTimeout(async () => {
@@ -600,30 +612,89 @@ function renderTypes() {
 }
 $('#modes').addEventListener('click', e => {
   const b = e.target.closest('[data-mode]'); if (!b) return;
-  S.mode = b.dataset.mode; store.set('mode', S.mode); renderModes(); pushState({ mode: S.mode }); refreshBanners();
+  S.mode = b.dataset.mode; store.set('mode', S.mode); renderModes(); pushState({ mode: S.mode }); scheduleAuto(true);
 });
 $('#types').addEventListener('click', e => {
   const b = e.target.closest('[data-type]'); if (!b) return;
   const t = b.dataset.type;
   if (S.types.includes(t)) { if (S.types.length > 1) S.types = S.types.filter(x => x !== t); }
   else S.types = [...S.types, t];
-  store.set('types', S.types); renderTypes(); pushState({ types: S.types }); refreshBanners();
+  store.set('types', S.types); renderTypes(); pushState({ types: S.types }); scheduleAuto(true);
 });
 
-function updateFindButton() {
-  const n = readyPeople().length;
+function updateCTA() {
   const btn = $('#find-btn');
-  btn.disabled = n < 2;
-  btn.textContent = n < 2
-    ? (S.session ? 'Waiting for a second starting point' : 'Add at least two starting points')
-    : `Find fair spots for ${n === 2 ? 'both of you' : 'all ' + n}`;
+  const n = readyPeople().length;
+  if (S.failedSig && S.failedSig !== signature()) { S.failedSig = null; S.autoError = null; }
+  if (S.results && $('#results').classList.contains('is-active')) $('#stale').hidden = !(S.results.sig !== signature() && n >= 2);
+  if (S.results && n >= 2) {
+    btn.disabled = false;
+    btn.textContent = `See ${S.results.spots.length === 1 ? 'the spot' : 'all ' + S.results.spots.length + ' spots'} on the map`;
+  } else {
+    btn.disabled = true;
+    btn.textContent = n >= 2 ? (S.autoError ? 'No spots found yet' : 'Finding fair spots\u2026') : (S.session ? 'Waiting for a second starting point' : 'Add at least two starting points');
+  }
+  renderLive();
 }
 function updateInvite() {
-  if (S.session) {
-    $('#invite-btn').hidden = true;
-  } else {
-    $('#invite-btn').hidden = false;
+  $('#invite-btn').hidden = !!S.session;
+  $('#plan-lede').hidden = !!S.session;
+  $('#add-label').textContent = S.session ? 'Add someone who isn\u2019t on the link' : 'Add someone yourself';
+}
+
+// live preview of the best spots on the plan screen
+function renderLive() {
+  const st = $('#live-status'), mini = $('#mini');
+  const n = readyPeople().length;
+  const fresh = S.results && S.results.sig === signature();
+  st.classList.remove('busy', 'err');
+  if (n < 2) {
+    st.textContent = S.session
+      ? 'Spots appear here as soon as a second person adds where they\u2019re coming from.'
+      : 'Spots appear here once there are two starting points.';
+    mini.innerHTML = ''; return;
   }
+  if (S.autoError && !fresh) { st.textContent = S.autoError; st.classList.add('err'); }
+  else if (!fresh) { st.textContent = S.results ? 'Updating for the latest changes\u2026' : 'Finding fair spots\u2026'; st.classList.add('busy'); }
+  else {
+    const by = S.results.byClient && S.results.byClient !== CLIENT_ID && S.results.by ? ` Found by ${S.results.by}.` : '';
+    st.textContent = `Ranked for ${S.results.people.length} people, ${({ DRIVING: 'by car', TRANSIT: 'by public transit', WALKING: 'on foot', BICYCLING: 'by bike' })[S.results.mode]}.${by}`;
+  }
+  mini.classList.toggle('dim', !fresh);
+  if (!S.results) { mini.innerHTML = ''; return; }
+  mini.innerHTML = S.results.spots.slice(0, 3).map((sp, i) => {
+    const vals = Object.values(sp.times);
+    const spread = Math.round((Math.max(...vals) - Math.min(...vals)) / 60);
+    const even = spread <= 2 ? 'Almost exactly even.' : `Everyone within ${spread} min.`;
+    return `<li><button type="button" data-id="${esc(sp.id)}"><span class="rank">${i + 1}</span><span><span class="mini-name">${esc(sp.name)}</span><span class="mini-sub">${even} Longest trip ${mins(Math.max(...vals))} min.</span></span></button></li>`;
+  }).join('');
+}
+$('#mini').addEventListener('click', e => {
+  const b = e.target.closest('[data-id]'); if (!b) return;
+  showResults();
+  const li = document.querySelector(`.card[data-id="${CSS.escape(b.dataset.id)}"]`);
+  if (li) { toggleCard(li, true); li.scrollIntoView({ block: 'center' }); }
+});
+
+// ── automatic recompute ──
+// Whoever made the change computes straight away; everyone else waits a little
+// (longer for higher slots) and skips if a fresh result arrives in the meantime.
+let autoTimer = null;
+function scheduleAuto(mine) {
+  updateCTA();
+  if (readyPeople().length < 2) { clearTimeout(autoTimer); return; }
+  if (S.results && S.results.sig === signature()) { clearTimeout(autoTimer); return; }
+  if (S.failedSig === signature()) return;   // don't hammer Google with a search that just failed
+  clearTimeout(autoTimer);
+  const delay = mine || !S.session ? 600 : 3000 + S.mySlot * 1500;
+  autoTimer = setTimeout(autoRun, delay);
+}
+async function autoRun() {
+  if (S.computing) { S.rerun = true; return; }
+  if (!G) { autoTimer = setTimeout(autoRun, 800); return; }
+  if (readyPeople().length < 2 || (S.results && S.results.sig === signature())) return;
+  await findSpots();
+  if (S.rerun) { S.rerun = false; scheduleAuto(true); }
 }
 
 // ───────────────────────── Google ─────────────────────────
@@ -679,40 +750,33 @@ function placeDetails(placeId) {
 
 // ───────────────────────── the search ─────────────────────────
 async function findSpots() {
-  if (!G) { toast('Maps are still loading. Try again in a second.'); return; }
   const ready = readyPeople();
-  if (ready.length < 2) return;
-  showLoading('Placing everyone on the map');
+  if (!G || ready.length < 2) return;
+  const sig = signature();
+  S.computing = true; S.autoError = null; updateCTA();
   try {
-    for (const p of ready) {
-      if (!hasLoc(p)) {
-        const loc = await geocode(p.address.trim());
-        p.lat = loc.lat; p.lng = loc.lng;
-        if (isMine(p)) commit(p);
-      }
-    }
     const spots = await computeSpots(ready.map(p => ({ slot: p.slot, lat: p.lat, lng: p.lng })), S.mode, S.types);
+    if (signature() !== sig) { S.rerun = true; return; }   // things changed while we were working
     S.results = {
       at: Date.now(), by: S.session ? (myName() || 'Someone') : '', byClient: CLIENT_ID,
-      sig: signature(), mode: S.mode,
+      sig, mode: S.mode,
       people: ready.map(p => ({ slot: p.slot, name: isSelf(p) ? (myName() || '') : p.name })),
       spots,
     };
-    S.chosen = null;
-    hideLoading();
-    showResults();
-    pushState({ results: S.results, chosen: null });
+    pushState({ results: S.results });
+    if ($('#results').classList.contains('is-active')) { renderResults(); drawMap(); }
   } catch (err) {
-    hideLoading();
-    toast(err && err.message ? err.message : 'Something went wrong finding spots. Try again.');
+    S.autoError = err && err.message ? err.message : 'Something went wrong finding spots.';
+    S.failedSig = sig;
     console.error(err);
+  } finally {
+    S.computing = false; updateCTA();
   }
 }
 
 async function computeSpots(locs, mode, types) {
   const c = { lat: locs.reduce((s, l) => s + l.lat, 0) / locs.length, lng: locs.reduce((s, l) => s + l.lng, 0) / locs.length };
   const points = [c, ...locs.map(l => ({ lat: (l.lat + c.lat) / 2, lng: (l.lng + c.lng) / 2 }))];
-  setLoading('Looking for places in between');
   const batches = await Promise.all(points.flatMap(pt => types.map(t => nearby(pt, t))));
   const filterFood = types.includes('restaurant') || types.includes('cafe');
   const seen = new Set();
@@ -734,7 +798,6 @@ async function computeSpots(locs, mode, types) {
   cands.sort((a, b) => a.pre - b.pre);
   cands = cands.slice(0, 45);
 
-  setLoading(`Timing ${cands.length * locs.length} trips`);
   const per = Math.max(1, Math.min(25, Math.floor(100 / locs.length)));
   const chunks = [];
   for (let i = 0; i < cands.length; i += per) chunks.push(cands.slice(i, i + per));
@@ -786,8 +849,6 @@ function showResults() {
   drawMap();
 }
 $('#back-btn').addEventListener('click', () => { showScreen('plan'); refreshBanners(); });
-$('#see-results-btn').addEventListener('click', showResults);
-$('#refresh-btn').addEventListener('click', findSpots);
 
 function resultPeople() {
   return S.results.people.map(rp => ({ slot: rp.slot, name: nameOf(rp.slot, rp.name) }));
@@ -803,6 +864,8 @@ function renderResults() {
   $('#res-sub').textContent = `${how}, for ${people.length} people.${by}`;
   $('#legend').innerHTML = people.map(p => `<span style="--c:${COLORS[p.slot % COLORS.length]}"><i></i>${esc(p.name)}</span>`).join('');
   $('#stale').hidden = !(R.sig && R.sig !== signature() && readyPeople().length >= 2);
+  if (S.autoError && R.sig !== signature()) { $('#stale-title').textContent = 'Couldn\u2019t update these spots'; $('#stale-sub').textContent = S.autoError; }
+  else { $('#stale-title').textContent = 'Updating for the latest changes'; $('#stale-sub').textContent = 'These spots will refresh in a moment.'; }
 
   const maxAll = Math.max(...R.spots.flatMap(s => Object.values(s.times)));
   const scaleMax = Math.max(10, Math.ceil(maxAll / 600) * 10);
@@ -1013,10 +1076,14 @@ async function share(text, url) {
   try { await navigator.clipboard.writeText(url ? `${text}\n${url}` : text); toast('Copied. Paste it into your group chat.'); return true; }
   catch { toast(url || text); return false; }
 }
-function shareInvite() {
+function linkFor(code) { return `${location.origin}${location.pathname}?g=${code}`; }
+function inviteText() {
   const who = myName();
-  return share(`${who ? who + ' wants' : 'Want'} to find somewhere fair to meet. Add where you’re coming from:`, sessionLink());
+  return who
+    ? `${who} wants to find somewhere fair to meet. Add where you\u2019re coming from:`
+    : 'Where shall we meet? Add where you\u2019re coming from and Midcamino finds the fairest spot:';
 }
+function shareInvite() { return share(inviteText(), sessionLink()); }
 $('#share-link-btn').addEventListener('click', shareInvite);
 
 // ───────────────────────── group sessions ─────────────────────────
@@ -1031,30 +1098,28 @@ function needSupa() {
   return false;
 }
 
+// One tap: the share sheet opens straight away (it has to, to keep the tap's
+// permission on iPhone) while the group is created in the background.
 $('#invite-btn').addEventListener('click', () => {
   if (!needSupa()) return;
-  $('#name-input').value = myName();
-  openModal('#name-modal');
-});
-$('#name-form').addEventListener('submit', async e => {
-  e.preventDefault();
-  const name = $('#name-input').value.trim(); if (!name) return;
-  store.set('name', name);
-  const btn = $('#name-submit'); btn.disabled = true; btn.textContent = 'Creating link…';
-  try {
-    await createSession();
-    closeModal('#name-modal');
-    const shared = await shareInvite();
-    if (!shared) toast('Your group link is ready. Tap Share link to send it.');
-  } catch (err) {
-    console.error(err); toast('Couldn’t create the group link. Check your connection and try again.');
-  } finally { btn.disabled = false; btn.textContent = 'Create group link'; }
+  const code = genCode();
+  const creating = createSession(code);
+  const sharing = share(inviteText(), linkFor(code));
+  Promise.all([creating, sharing]).then(([finalCode, shared]) => {
+    if (finalCode !== code) { toast('Your link changed. Tap Share link to send the new one.'); return; }
+    const me = S.people.find(isSelf);
+    if (shared && me && !me.address) {
+      toast('Link ready. Now add where you\u2019re coming from.');
+      const li = document.querySelector(`[data-key="${CSS.escape(me.key)}"]`);
+      if (li) li.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+  }).catch(err => { console.error(err); toast('Couldn\u2019t create the group link. Check your connection and try again.'); });
 });
 
-async function createSession() {
+async function createSession(firstCode) {
   let sess = null;
   for (let i = 0; i < 4 && !sess; i++) {
-    const { data, error } = await supa.from('sessions').insert({ code: genCode(), state: { mode: S.mode, types: S.types } }).select('id, code, state').single();
+    const { data, error } = await supa.from('sessions').insert({ code: i === 0 && firstCode ? firstCode : genCode(), state: { mode: S.mode, types: S.types } }).select('id, code, state').single();
     if (!error) sess = data; else if (error.code !== '23505') throw error;
   }
   if (!sess) throw new Error('code collision');
@@ -1062,13 +1127,14 @@ async function createSession() {
   const local = S.people.filter(p => isSelf(p) || p.address.trim() || p.name);
   const rows = local.map((p, i) => ({
     session_id: sess.id, slot: i, client_id: CLIENT_ID,
-    name: isSelf(p) ? myName() : p.name, address: p.address, lat: hasLoc(p) ? p.lat : null, lng: hasLoc(p) ? p.lng : null,
+    name: isSelf(p) ? (p.name || myName()) : p.name, address: p.address, lat: hasLoc(p) ? p.lat : null, lng: hasLoc(p) ? p.lng : null,
   }));
   const selfIdx = local.findIndex(isSelf);
   const { error } = await supa.from('participants').insert(rows);
   if (error) throw error;
   store.set('self_' + sess.code, selfIdx);
   await enterSession(sess, selfIdx);
+  return sess.code;
 }
 
 async function insertParticipant(fields, wantSelf) {
@@ -1134,7 +1200,9 @@ async function refetch() {
   if (!S.people.some(isSelf)) {
     // my row is gone (removed elsewhere); fall back to a solo plan
     leaveSessionLocally(); resetLocal(); toast('You’re no longer in that group.');
+    return;
   }
+  scheduleAuto(false);
 }
 
 function subscribe() {
@@ -1151,6 +1219,7 @@ function onParticipant(p) {
     const gone = S.people.find(x => x.id === p.old.id);
     S.people = S.people.filter(x => x.id !== p.old.id);
     renderPeople();
+    scheduleAuto(false);
     if (gone && !isMine(gone) && gone.name) toast(`${gone.name} left the group.`);
     return;
   }
@@ -1158,6 +1227,7 @@ function onParticipant(p) {
   const isNew = !S.people.some(x => x.id === r.id);
   upsertPersonFromRow(r);
   renderPeople();
+  scheduleAuto(false);
   if (S.results && $('#results').classList.contains('is-active')) $('#stale').hidden = !(S.results.sig !== signature());
   if (r.client_id === CLIENT_ID) return;
   if (isNew && r.name) toast(`${r.name} joined the group.`);
@@ -1176,11 +1246,11 @@ function applyState(st, initial) {
   if (st.mode && MODES[st.mode] && st.mode !== S.mode) { S.mode = st.mode; renderModes(); }
   if (Array.isArray(st.types) && st.types.length && st.types.join() !== S.types.join()) { S.types = st.types; renderTypes(); }
   const prevResultsAt = S.results && S.results.at;
-  if (st.results && st.results.at !== prevResultsAt) {
-    S.results = st.results;
+  if (st.results && st.results.at !== prevResultsAt && (!S.results || st.results.at > S.results.at)) {
+    S.results = st.results; S.autoError = null;
     if ($('#results').classList.contains('is-active')) { renderResults(); drawMap(); }
-    else if (!initial && st.results.byClient !== CLIENT_ID) toast(`${st.results.by || 'Someone'} found ${st.results.spots.length} spots.`);
   }
+  scheduleAuto(false);
   const prevChosen = S.chosen && S.chosen.id;
   S.chosen = st.chosen || null;
   if ((S.chosen && S.chosen.id) !== prevChosen) {
@@ -1192,14 +1262,7 @@ function applyState(st, initial) {
 
 function refreshBanners() {
   refreshChosenBanners();
-  const rr = $('#results-ready');
-  if (S.results && $('#plan').classList.contains('is-active')) {
-    const stale = S.results.sig !== signature();
-    $('#ready-title').textContent = `${S.results.spots.length} spots found`;
-    $('#ready-sub').textContent = stale ? 'Found before the latest changes. Search again to update them.'
-      : (S.results.byClient && S.results.byClient !== CLIENT_ID && S.results.by ? `${S.results.by} ran the search.` : 'From your last search.');
-    rr.hidden = false;
-  } else rr.hidden = true;
+  updateCTA();
 }
 
 // joining via link / code
@@ -1258,6 +1321,7 @@ $('#join-form').addEventListener('submit', async e => {
     S.people = [];
     closeModal('#join-modal');
     await enterSession(joinDraft.sess, row.slot);
+    scheduleAuto(true);
     toast(address ? 'You’re in. Everyone can see where you’re coming from.' : 'You’re in. Add where you’re coming from when you know.');
   } finally { btn.disabled = false; btn.textContent = 'Join the group'; }
 });
@@ -1286,7 +1350,7 @@ async function leaveGroup() {
 function resetLocal(keep) {
   S.mySlot = 0; S.results = null; S.chosen = null; S.sessionState = {};
   const last = keep || store.get('lastStart', null);
-  S.people = [localPerson(0, last ? { address: last.address || '', lat: last.lat ?? null, lng: last.lng ?? null } : {}), localPerson(1)];
+  S.people = [localPerson(0, { name: myName(), ...(last ? { address: last.address || '', lat: last.lat ?? null, lng: last.lng ?? null } : {}) }), localPerson(1)];
   showScreen('plan'); renderPeople(); refreshBanners();
 }
 
@@ -1299,7 +1363,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 window.addEventListener('online', () => { if (S.session) { subscribe(); } });
 
 $('#add-btn').addEventListener('click', addPerson);
-$('#find-btn').addEventListener('click', findSpots);
+$('#find-btn').addEventListener('click', showResults);
 
 // ───────────────────────── boot ─────────────────────────
 (function boot() {
