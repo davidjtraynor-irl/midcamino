@@ -586,6 +586,21 @@ function useGPS(p, input) {
   }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 });
 }
 
+// Place any of my starting points that have text but no map position yet
+// (typed without picking a suggestion, then the page was closed).
+const resolving = new Set(), unresolvable = new Set();
+function resolvePending() {
+  if (!G) return;
+  S.people.filter(p => isMine(p) && p.address.trim() && !hasLoc(p)).forEach(async p => {
+    const text = p.address.trim();
+    if (resolving.has(p.key) || unresolvable.has(text)) return;
+    resolving.add(p.key);
+    try { const l = await geocode(text); if (p.address.trim() === text) { p.lat = l.lat; p.lng = l.lng; renderPeople(); commit(p); } }
+    catch { unresolvable.add(text); }
+    finally { resolving.delete(p.key); }
+  });
+}
+
 // persist a person (session only)
 const commitQueue = new Map();
 function commit(p) {
@@ -705,6 +720,7 @@ window.gInit = function () {
     places: new google.maps.places.PlacesService(document.createElement('div')),
   };
   document.querySelectorAll('input[data-ac-pending]').forEach(inp => inp._acAttach && inp._acAttach());
+  resolvePending();
 };
 window.gm_authFailure = function () { toast('Google Maps refused this site’s key. Check the API key restrictions.'); };
 
@@ -1199,6 +1215,7 @@ async function refetch() {
     leaveSessionLocally(); resetLocal(); toast('You’re no longer in that group.');
     return;
   }
+  resolvePending();
   scheduleAuto(false);
 }
 
@@ -1348,7 +1365,7 @@ function resetLocal(keep) {
   S.mySlot = 0; S.results = null; S.chosen = null; S.sessionState = {};
   const last = keep || store.get('lastStart', null);
   S.people = [localPerson(0, { name: myName(), ...(last ? { address: last.address || '', lat: last.lat ?? null, lng: last.lng ?? null } : {}) }), localPerson(1)];
-  showScreen('plan'); renderPeople(); refreshBanners();
+  showScreen('plan'); renderPeople(); refreshBanners(); resolvePending();
 }
 
 function syncHeader() { $('#code-btn').textContent = S.session ? 'Leave group' : 'Join with a code'; }
